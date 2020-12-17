@@ -4,7 +4,7 @@
 #include "Esvr2.h"
 #include "Esvr2VideoLoader.h"
 //#include "Esvr2PoseState.h"
-//#include "Esvr2LaparoscopeController.h"
+#include "Esvr2LaparoscopeController.h"
 
 #include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
@@ -40,9 +40,9 @@ namespace esvr2_ros
     static RosInputType getRosInputType(std::string input_str);
 
     class VideoROSNode :
-            public esvr2::VideoLoader
+            public esvr2::VideoLoader,
 //            public esvr2::PoseState,
-//            public esvr2::LaparoscopeController
+            public esvr2::LaparoscopeController
     {
     private:
         ros::NodeHandle *mNh;
@@ -94,12 +94,12 @@ namespace esvr2_ros
 
         bool getQuit();
 
-//        bool moveLaparoscopeTo(
-//                LaparoscopeDOFPose) override;
-//        bool getLaparoscopePose(
-//                LaparoscopeDOFPose &laparoscopeDofPose) override;
-//        bool getLaparoscopeBoundaries(
-//                LaparoscopeDOFBoundaries &laparoscopeDofBoundaries) override;
+        bool moveLaparoscopeTo(
+                LaparoscopeDOFPose);
+        bool getLaparoscopePose(
+                LaparoscopeDOFPose &laparoscopeDofPose);
+        bool getLaparoscopeBoundaries(
+                LaparoscopeDOFBoundaries &laparoscopeDofBoundaries);
 
     };
 }

@@ -48,7 +48,7 @@ namespace esvr2_ros
                                 bool stereo):
             VideoLoader( distortion, stereo ),
 //            PoseState(),
-//            LaparoscopeController(),
+            LaparoscopeController(),
             mNh( nh ),
             mSubImageLeftRaw( nullptr ),
             mSubImageRightRaw( nullptr ),
@@ -477,19 +477,19 @@ namespace esvr2_ros
         return !mNh->ok() || mQuit;
     }
 
-//    bool moveLaparoscopeTo(
-//            LaparoscopeDOFPose)
-//    {
-//        return false;
-//    }
-//    bool getLaparoscopePose(LaparoscopeDOFPose &laparoscopePose)
-//    {
-//        return false;
-//    }
-//    bool getLaparoscopeBoundary(LaparoscopeDOFBoundaries &laparoscopeDofBoundaries)
-//    {
-//        return false;
-//    }
+    bool VideoROSNode::moveLaparoscopeTo(
+            LaparoscopeDOFPose)
+    {
+        return false;
+    }
+    bool VideoROSNode::getLaparoscopePose(LaparoscopeDOFPose &laparoscopePose)
+    {
+        return false;
+    }
+    bool VideoROSNode::getLaparoscopeBoundaries(LaparoscopeDOFBoundaries &laparoscopeDofBoundaries)
+    {
+        return false;
+    }
 }
 
 
@@ -550,7 +550,7 @@ int main(int argc, char *argv[])
             config);
     rosNode->getEsvr2ConfigFilePath();
     Esvr2 esvr2 = Esvr2(config, sharedRosNode,
-//                        rosNode,
+                        sharedRosNode,
                         nullptr);
 //            Esvr2( config, rosNode, rosNode, rosNode);
     return esvr2.run();
