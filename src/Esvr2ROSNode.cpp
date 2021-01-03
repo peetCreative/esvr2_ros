@@ -93,7 +93,7 @@ namespace esvr2_ros
                 return false;
             case RIT_MONO:
                 LOG << "RIT_MONO" << LOGEND;
-                topic = mRosNamespace + "image_raw";
+                topic = mRosNamespace + "/image_raw";
                 LOG << "Subscribe to " << topic << LOGEND;
                 mSubImage = mNh->subscribe(
                         topic, 1,
@@ -101,7 +101,7 @@ namespace esvr2_ros
                 break;
             case RIT_STEREO_SLICED:
                 LOG << "RIT_STEREO_SLICED" << LOGEND;
-                topic = mRosNamespace + "image";
+                topic = mRosNamespace + "/image";
                 LOG << "Subscribe to " << topic << LOGEND;
                 mSubImage = mNh->subscribe(
                         topic, 1,
@@ -109,12 +109,12 @@ namespace esvr2_ros
                 break;
             case RIT_STEREO_SPLIT_RAW:
                 LOG << "RIT_STEREO_SPLIT_RAW" << LOGEND;
-                topic = mRosNamespace + "left/" + mRosTopicNameRaw;
+                topic = mRosNamespace + "/left/" + mRosTopicNameRaw;
                 LOG << "Subscribe to " << topic << LOGEND;
                 mSubImageLeftRaw= new
                         message_filters::Subscriber<sensor_msgs::Image> (
                         *mNh, topic, 20);
-                topic = mRosNamespace + "right/" + mRosTopicNameRaw;
+                topic = mRosNamespace + "/right/" + mRosTopicNameRaw;
                 LOG << "Subscribe to " << topic << LOGEND;
                 mSubImageRightRaw = new
                         message_filters::Subscriber<sensor_msgs::Image> (
@@ -130,12 +130,12 @@ namespace esvr2_ros
                 LOG << "RIT_STEREO_SPLIT" << LOGEND;
                 if(mRosTopicNameRaw.compare("") != 0)
                 {
-                    topic = mRosNamespace + "left/" + mRosTopicNameRaw;
+                    topic = mRosNamespace + "/left/" + mRosTopicNameRaw;
                     LOG << "Subscribe to " << topic << LOGEND;
                     mSubImageLeftRaw = new
                             message_filters::Subscriber<sensor_msgs::Image> (
                             *mNh, topic, 20);
-                    topic = mRosNamespace + "right/" + mRosTopicNameRaw;
+                    topic = mRosNamespace + "/right/" + mRosTopicNameRaw;
                     LOG << "Subscribe to " << topic << LOGEND;
                     mSubImageRightRaw = new
                             message_filters::Subscriber<sensor_msgs::Image> (
@@ -149,12 +149,12 @@ namespace esvr2_ros
                 }
                 if(mRosTopicNameUndist.compare("") != 0)
                 {
-                    topic = mRosNamespace + "left/" + mRosTopicNameUndist;
+                    topic = mRosNamespace + "/left/" + mRosTopicNameUndist;
                     LOG << "Subscribe to " << topic << LOGEND;
                     mSubImageLeftUndist = new
                             message_filters::Subscriber<sensor_msgs::Image> (
                             *mNh, topic, 20);
-                    topic = mRosNamespace + "right/" + mRosTopicNameUndist;
+                    topic = mRosNamespace + "/right/" + mRosTopicNameUndist;
                     LOG << "Subscribe to " << topic << LOGEND;
                     mSubImageRightUndist = new
                             message_filters::Subscriber<sensor_msgs::Image> (
@@ -168,12 +168,12 @@ namespace esvr2_ros
                 }
                 if(mRosTopicNameUndistRect.compare("") != 0)
                 {
-                    topic = mRosNamespace + "left/" + mRosTopicNameUndistRect;
+                    topic = mRosNamespace + "/left/" + mRosTopicNameUndistRect;
                     LOG << "Subscribe to " << topic << LOGEND;
                     mSubImageLeftUndistRect = new
                             message_filters::Subscriber<sensor_msgs::Image> (
                             *mNh, topic, 20);
-                    topic = mRosNamespace + "right/" + mRosTopicNameUndistRect;
+                    topic = mRosNamespace + "/right/" + mRosTopicNameUndistRect;
                     LOG << "Subscribe to " << topic << LOGEND;
                     mSubImageRightUndistRect = new
                             message_filters::Subscriber<sensor_msgs::Image> (
@@ -190,12 +190,12 @@ namespace esvr2_ros
 
         if (!mIsCameraInfoInit[LEFT] && !mIsCameraInfoInit[RIGHT])
         {
-            topic = mRosNamespace + "left/camera_info";
+            topic = mRosNamespace + "/left/camera_info";
             LOG << "Subscribe to " << topic << LOGEND;
             mSubCamInfoLeft = mNh->subscribe(
                     topic, 1,
                     &VideoROSNode::newROSCameraInfoCallback<LEFT>, this);
-            topic = mRosNamespace + "right/camera_info";
+            topic = mRosNamespace + "/right/camera_info";
             LOG << "Subscribe to " << topic << LOGEND;
             mSubCamInfoRight = mNh->subscribe(
                     topic, 1,
