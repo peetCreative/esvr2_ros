@@ -1,0 +1,27 @@
+show_ogre_dialog: false
+multithreading: false
+show_video: true
+render_video_target: "TO_2D_RECTANGLE"
+resource_path: "/path/to/Resources.cfg"
+debug_screen: false
+controller_type: "KEYBOARD"
+hmd_info:
+  width: 1680
+  height: 1512
+  initial_pose: [0, 1.6, 0]
+  left:
+    eye_to_head: [-0.03015, 0, 0.015]
+    projection_matrix: [
+        0.760993, 0, -0.0606509, 0,
+        0, 0.683865, -0.00290834, 0,
+        0, 0, -1.0002, -0.20004,
+        0, 0, -1, 0]
+    tan: [-1.39377, 1.23437, -1.46653, 1.45802]
+  right:
+    eye_to_head: [0.03015, 0, 0.015]
+    projection_matrix: [
+        0.758047, 0, 0.0573383, 0,
+        0, 0.682189, -0.00424198, 0,
+        0, 0, -1.0002, -0.20004,
+        0, 0, -1, 0]
+    tan: [-1.24354, 1.39482, -1.47209, 1.45965]

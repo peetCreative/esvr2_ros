@@ -81,10 +81,21 @@ namespace esvr2_ros
         tf2_ros::Buffer *mTfBuffer;
         tf2_ros::TransformListener *mTfListener;
 
+        bool mEnableLaparoscopeController;
+        ros::Publisher mLaparoscopeCurDOFPosePub;
+        ros::Subscriber mLaparoscopeBoundariesSub;
+        ros::Subscriber mLaparoscopePoseSub;
+        int mLaparoscopePoseSeq;
+        LaparoscopeDOFPose *mLaparoscopeDOFPoseCur;
+        LaparoscopeDOFBoundaries *mLaparoscopeDOFBoundaries;
+
         void newROSCameraInfoCallback();
     public:
         VideoROSNode(ros::NodeHandle* nodeHandle,
-                     Distortion distortion, bool stereo);
+                     Distortion distortion,
+                     bool stereo,
+                     RosInputType rosInputType,
+                     bool enableLaparoscopeController);
         ~VideoROSNode();
 
         void setDistortion( Distortion distortion );
