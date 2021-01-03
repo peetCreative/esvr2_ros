@@ -30,10 +30,23 @@ using namespace esvr2;
 namespace esvr2_ros
 {
     typedef enum {
+        // if no Input type is configured ROS will not
+        // provide Videoloader
         RIT_NONE,
+        // subscribes only to the topic image_raw and camera_config
         RIT_MONO,
+        // subscribes to the topic image_raw and camera_config
+        // and splits the image by it self
         RIT_STEREO_SLICED,
+        // subscribes to the topics
+        // left/image_raw, left/image_undist and left/image_undist_rect
+        // right/image_raw, right/image_undist and right/image_undist_rect
+        // and left/camera_config and right/camera_config
+        // and uses them for different "distortions"
         RIT_STEREO_SPLIT,
+        // left/image_raw and right/image_raw
+        // and left/camera_config and right/camera_config
+        // and uses them to calculate the undistortet and undist and rect
         RIT_STEREO_SPLIT_RAW
     } RosInputType;
 
