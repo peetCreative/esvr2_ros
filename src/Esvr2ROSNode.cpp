@@ -592,6 +592,10 @@ namespace esvr2_ros
         laparoscopeDofBoundaries = *mLaparoscopeDOFBoundaries;
         return true;
     }
+
+    bool VideoROSNode::isReady() {
+        return LaparoscopeController::isReady() && VideoLoader::isReady();
+    }
 }
 
 

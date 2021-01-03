@@ -5,6 +5,7 @@
 #include "Esvr2VideoLoader.h"
 //#include "Esvr2PoseState.h"
 #include "Esvr2LaparoscopeController.h"
+#include "Esvr2Component.h"
 
 #include "mediassist3_panda_pivoting/LaparoscopeDOFPose.h"
 #include "mediassist3_panda_pivoting/LaparoscopeDOFBoundaries.h"
@@ -120,6 +121,8 @@ namespace esvr2_ros
         void update( );
 
         bool getQuit();
+
+        bool isReady() override;
 
         bool moveLaparoscopeTo(
                 LaparoscopeDOFPose);
