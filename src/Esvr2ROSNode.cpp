@@ -4,6 +4,9 @@
 #include "Esvr2VideoLoader.h"
 #include "Esvr2ParseYml.h"
 
+#include "mediassist3_panda_pivoting/LaparoscopeDOFPose.h"
+#include "mediassist3_panda_pivoting/LaparoscopeDOFBoundaries.h"
+
 #include "opencv2/opencv.hpp"
 
 #include <cv_bridge/cv_bridge.h>
@@ -67,7 +70,13 @@ namespace esvr2_ros
             mSubscribePose(true),
             mTfBuffer(nullptr),
             mTfListener(nullptr),
-            mEnableLaparoscopeController(enableLaparoscopeController)
+            mEnableLaparoscopeController(enableLaparoscopeController),
+            mLaparoscopeCurDOFPosePub(),
+            mLaparoscopeBoundariesSub(),
+            mLaparoscopePoseSub(),
+            mLaparoscopePoseSeq(0),
+            mLaparoscopeDOFPoseCur(nullptr),
+            mLaparoscopeDOFBoundaries(nullptr)
     {
         mRosNamespace = mNh->getNamespace();
 //        if (cameraConfig)
@@ -253,6 +262,25 @@ namespace esvr2_ros
             mTfListener = new tf2_ros::TransformListener(*mTfBuffer, mNh);
 //             topic = "/tf";
 //             LOG << "Subscribe to " << topic << LOGEND;
+        }
+
+        if(mEnableLaparoscopeController)
+        {
+            mLaparoscopeCurDOFPosePub = mNh->advertise<
+                    mediassist3_panda_pivoting::LaparoscopeDOFPose>(
+                            "target/laparoscope_dof_pose", 1);
+            mLaparoscopeBoundariesSub = mNh->subscribe(
+                            "laparoscope_dof_boundaries", 1,
+                            &VideoROSNode::laparoscopeDOFBoundariesCallback, this);
+            mLaparoscopePoseSub = mNh->subscribe(
+                            "current/laparoscope_dof_pose", 1,
+                            &VideoROSNode::laparoscopeDOFPoseCallback, this);
+        }
+        //TODO:This should not make da diddeerence
+        else
+        {
+            mLaparoscopeDofBoundariesReady = true;
+            mLaparoscopeDofPoseReady = true;
         }
         return true;
     }
@@ -499,17 +527,70 @@ namespace esvr2_ros
     }
 
     bool VideoROSNode::moveLaparoscopeTo(
-            LaparoscopeDOFPose)
+            LaparoscopeDOFPose pose)
     {
-        return false;
+        mediassist3_panda_pivoting::LaparoscopeDOFPose poseMsg;
+        poseMsg.header = std_msgs::Header();
+        poseMsg.header.frame_id = "LaparoscopeTargetDOFPose";
+        poseMsg.header.seq = mLaparoscopePoseSeq++;
+        poseMsg.header.stamp = ros::Time::now();
+        poseMsg.swing_x = pose.swingX;
+        poseMsg.swing_y = pose.swingY;
+        poseMsg.trans_z = pose.transZ;
+        poseMsg.rot_z = pose.rotZ;
+        mLaparoscopeCurDOFPosePub.publish(poseMsg);
+        return true;
     }
+
+    void VideoROSNode::laparoscopeDOFPoseCallback(
+            const mediassist3_panda_pivoting::LaparoscopeDOFPose &laparoscopePose)
+    {
+        if (!mLaparoscopeDOFPoseCur)
+        {
+            mLaparoscopeDOFPoseCur = new LaparoscopeDOFPose();
+        }
+        mLaparoscopeDOFPoseCur->swingX = laparoscopePose.swing_x;
+        mLaparoscopeDOFPoseCur->swingY = laparoscopePose.swing_y;
+        mLaparoscopeDOFPoseCur->rotZ = laparoscopePose.rot_z;
+        mLaparoscopeDOFPoseCur->transZ = laparoscopePose.trans_z;
+        mLaparoscopeDofPoseReady = true;
+    }
+
+    //good question if we should implement this as service or as message
+    //for now we do messages
     bool VideoROSNode::getLaparoscopePose(LaparoscopeDOFPose &laparoscopePose)
     {
-        return false;
+        if (!mLaparoscopeDOFPoseCur)
+            return false;
+        laparoscopePose = *mLaparoscopeDOFPoseCur;
+        return true;
     }
-    bool VideoROSNode::getLaparoscopeBoundaries(LaparoscopeDOFBoundaries &laparoscopeDofBoundaries)
+
+    void VideoROSNode::laparoscopeDOFBoundariesCallback(
+            const mediassist3_panda_pivoting::LaparoscopeDOFBoundaries
+            &laparoscopeDOFBoundaries)
     {
-        return false;
+        if (!mLaparoscopeDOFBoundaries)
+        {
+            mLaparoscopeDOFBoundaries = new LaparoscopeDOFBoundaries();
+        }
+        mLaparoscopeDOFBoundaries->swingXMax = laparoscopeDOFBoundaries.swingXMax;
+        mLaparoscopeDOFBoundaries->swingXMin = laparoscopeDOFBoundaries.swingXMin;
+        mLaparoscopeDOFBoundaries->swingYMax = laparoscopeDOFBoundaries.swingYMax;
+        mLaparoscopeDOFBoundaries->swingYMin = laparoscopeDOFBoundaries.swingYMin;
+        mLaparoscopeDOFBoundaries->transZMax = laparoscopeDOFBoundaries.transZMax;
+        mLaparoscopeDOFBoundaries->transZMin = laparoscopeDOFBoundaries.transZMin;
+        mLaparoscopeDOFBoundaries->rotZMax = laparoscopeDOFBoundaries.rotZMax;
+        mLaparoscopeDOFBoundaries->rotZMin = laparoscopeDOFBoundaries.rotZMin;
+        mLaparoscopeDofBoundariesReady = true;
+    }
+    bool VideoROSNode::getLaparoscopeBoundaries(
+            LaparoscopeDOFBoundaries &laparoscopeDofBoundaries)
+    {
+        if (!mLaparoscopeDOFBoundaries)
+            return false;
+        laparoscopeDofBoundaries = *mLaparoscopeDOFBoundaries;
+        return true;
     }
 }
 

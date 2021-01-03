@@ -6,6 +6,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/CMake")
 SET(CMAKE_BUILD_TYPE "Debug")
 
 find_package(catkin REQUIRED COMPONENTS
+    mediassist3_panda_pivoting
     cv_bridge
     roscpp
     sensor_msgs

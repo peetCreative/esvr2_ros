@@ -6,6 +6,9 @@
 //#include "Esvr2PoseState.h"
 #include "Esvr2LaparoscopeController.h"
 
+#include "mediassist3_panda_pivoting/LaparoscopeDOFPose.h"
+#include "mediassist3_panda_pivoting/LaparoscopeDOFBoundaries.h"
+
 #include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
 
@@ -120,8 +123,12 @@ namespace esvr2_ros
 
         bool moveLaparoscopeTo(
                 LaparoscopeDOFPose);
+        void laparoscopeDOFPoseCallback(
+                const mediassist3_panda_pivoting::LaparoscopeDOFPose &laparoscopePose);
         bool getLaparoscopePose(
                 LaparoscopeDOFPose &laparoscopeDofPose);
+        void laparoscopeDOFBoundariesCallback(
+                const mediassist3_panda_pivoting::LaparoscopeDOFBoundaries &laparoscopeDOFBoundaries);
         bool getLaparoscopeBoundaries(
                 LaparoscopeDOFBoundaries &laparoscopeDofBoundaries);
 
