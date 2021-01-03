@@ -1,10 +1,7 @@
 #include "Esvr2ROSNode.h"
 
 #include "Esvr2.h"
-
-//#include "Esvr2PoseState.h"
 #include "Esvr2VideoLoader.h"
-//#include "Esvr2GameState.h"
 #include "Esvr2ParseYml.h"
 
 #include "opencv2/opencv.hpp"
@@ -209,8 +206,6 @@ namespace esvr2_ros
 //                 LOG << "no Publisher for camera_info" << LOGEND;
 //                 return false;
 //             }
-            // we have to wait until cameraconfig has been read from messages
-            mReady = false;
         }
         else
         {
@@ -228,10 +223,6 @@ namespace esvr2_ros
             mTfListener = new tf2_ros::TransformListener(*mTfBuffer, mNh);
 //             topic = "/tf";
 //             LOG << "Subscribe to " << topic << LOGEND;
-            //TODO: It get's simply not called
-//             mSubPose = mNh->subscribe(
-//                     topic, 1,
-//                     &VideoROSNode::newROSPose, this);
         }
         return true;
     }
