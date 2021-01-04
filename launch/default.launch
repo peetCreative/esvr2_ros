@@ -1,0 +1,19 @@
+<launch>
+    <group ns="esvr2">
+        <node name="esvr2_ros" pkg="esvr2_ros" type="esvr2_ros"
+              output="screen" launch-prefix="xterm -e gdb --args">
+            <param name="enable_laparoscope_controller" type="bool" value="True"/>
+            <param name="ros_input_type" value="STEREO_SPLIT_RAW" />
+            <param name="distortion" value="RAW" />
+            <param name="config_file" value="package://esvr2_ros/config/general.yml" />
+            <remap from="left/image_raw" to="/gazebo/laparoscope/left/image_raw"/>
+            <remap from="right/image_raw" to="/gazebo/laparoscope/right/image_raw"/>
+            <remap from="left/camera_info" to="/gazebo/laparoscope/left/camera_info"/>
+            <remap from="right/camera_info" to="/gazebo/laparoscope/right/camera_info"/>
+
+            <remap from="current/laparoscope_dof_pose" to="/gazebo/laparoscope/joint_controller/current/laparoscope_dof_pose"/>
+            <remap from="laparoscope_dof_boundaries" to="/gazebo/laparoscope/joint_controller/laparoscope_dof_boundaries"/>
+            <remap from="target/laparoscope_dof_pose" to="/gazebo/laparoscope/joint_controller/target/laparoscope_dof_pose"/>
+        </node>
+    </group>
+</launch>
