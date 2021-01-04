@@ -2,7 +2,6 @@ show_ogre_dialog: false
 multithreading: false
 show_video: true
 render_video_target: "TO_2D_RECTANGLE"
-resource_path: "/path/to/Resources.cfg"
 debug_screen: false
 controller_type: "KEYBOARD"
 hmd_info:

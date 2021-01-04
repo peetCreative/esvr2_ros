@@ -670,6 +670,7 @@ int main(int argc, char *argv[])
         ROS_ERROR("Cannot read Configfile.");
         return 1;
     }
+    config->resourcePath = RESOURCES_FILE;
     rosNode->getEsvr2ConfigFilePath();
     std::shared_ptr<LaparoscopeController> laparoscopeController =
             enableLaparoscopeController ? sharedRosNode : nullptr;
