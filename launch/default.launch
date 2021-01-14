@@ -1,7 +1,6 @@
 <launch>
     <group ns="esvr2">
-        <node name="esvr2_ros" pkg="esvr2_ros" type="esvr2_ros"
-              output="screen" launch-prefix="xterm -e gdb --args">
+        <node name="esvr2_ros" pkg="esvr2_ros" type="esvr2_ros" >
             <param name="enable_laparoscope_controller" type="bool" value="True"/>
             <param name="ros_input_type" value="STEREO_SPLIT_RAW" />
             <param name="distortion" value="RAW" />
