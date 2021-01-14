@@ -639,23 +639,36 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "esvr2");
     ros::NodeHandle *nh = new ros::NodeHandle();
     ros::NodeHandle *pnh = new ros::NodeHandle("~");
-    std::string ritStr;
-    pnh->param<std::string>("ros_input_type", ritStr, "STEREO_SPLIT");
+    LOG << "global" << LOGEND;
+    std::vector<std::string> paramNames;
+    nh->getParamNames(paramNames);
+
+
+    std::string paramName;
+    std::string ritStr = "STEREO_SPLIT";
+    if(pnh->searchParam("ros_input_type", paramName))
+    {
+        pnh->param<std::string>(paramName, ritStr);
+    }
     esvr2_ros::RosInputType rosInputType = esvr2_ros::getRosInputType(ritStr);
     bool stereo = rosInputType != esvr2_ros::RIT_MONO;
-    std::string distortionStr;
-    pnh->param<std::string>("distortion", distortionStr, "DIST_RAW");
+
+    std::string distortionStr = "DIST_RAW";
+    if(pnh->searchParam("distortion", paramName))
+    {
+        pnh->param<std::string>(paramName, distortionStr);
+    }
     Distortion distortion = getDistortionType(distortionStr);
+
     bool enableLaparoscopeController = true;
-    pnh->param<bool>(
-            "enable_laparoscope_controller",
-            enableLaparoscopeController,
-            false);
+    if(pnh->searchParam("enable_laparoscope_controller", paramName))
+    {
+        pnh->param<bool>(paramName, enableLaparoscopeController);
+    }
     if(enableLaparoscopeController)
         ROS_INFO("Enabled Laparoscope COntroller");
     else
         ROS_INFO("DISABLED Laparoscope COntroller");
-
 
     esvr2_ros::VideoROSNode *rosNode =
             new esvr2_ros::VideoROSNode(
