@@ -114,8 +114,6 @@ namespace esvr2_ros
         void newROSCameraInfoCallback (
                 const sensor_msgs::CameraInfo::ConstPtr& camInfo );
 
-        std::string getEsvr2ConfigFilePath();
-
         bool initialize(void);
         void deinitialize(void);
         void update( );

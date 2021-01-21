@@ -1,10 +1,12 @@
 <launch>
     <group ns="esvr2">
+        <arg name="custom_config_files" default="" />
+
         <node name="esvr2_ros" pkg="esvr2_ros" type="esvr2_ros" >
             <param name="enable_laparoscope_controller" type="bool" value="True"/>
             <param name="ros_input_type" value="STEREO_SPLIT_RAW" />
             <param name="distortion" value="RAW" />
-            <param name="config_file" value="package://esvr2_ros/config/general.yml" />
+            <param name="config_files" value="package://esvr2_ros/config/general.yml;$(arg custom_config_files)" />
             <remap from="left/image_raw" to="/gazebo/laparoscope/left/image_raw"/>
             <remap from="right/image_raw" to="/gazebo/laparoscope/right/image_raw"/>
             <remap from="left/camera_info" to="/gazebo/laparoscope/left/camera_info"/>

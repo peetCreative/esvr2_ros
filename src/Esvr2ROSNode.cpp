@@ -89,39 +89,6 @@ namespace esvr2_ros
 
     VideoROSNode::~VideoROSNode() {}
 
-    std::string VideoROSNode::getEsvr2ConfigFilePath()
-    {
-        std::string url;
-        mNh->param<std::string>(
-                "config_file",
-                url,
-                "package://esvr2_ros/config/general.yml");
-        if (url.substr(0,8) == "file:///")
-        {
-            //absolute file path
-            return url.substr(7);
-        }
-        std::string prefix = "package://";
-        size_t prefix_len = prefix.length();
-        if (url.substr(0, prefix_len) == prefix)
-        {
-            size_t rest = url.find('/', prefix_len);
-            std::string packageName = url.substr(prefix_len, rest - prefix_len);
-            std::string pkgPath = ros::package::getPath(packageName);
-            std::string restStr = url.substr(rest);
-            if (pkgPath.empty())
-            {
-                return "";
-            }
-            else
-            {
-                return pkgPath + url.substr(rest);
-            }
-        }
-        LOG << "Did not recognize package" << LOGEND;
-        return "";
-    }
-
     bool VideoROSNode::initialize(void)
     {
         std::string topic;
@@ -631,7 +598,42 @@ namespace esvr2_ros
 //                    }
 //                }
 
+std::vector<std::string> getEsvr2ConfigFilePath(std::string urlstr)
+{
+    size_t start;
+    size_t end = 0;
+    char delim = ';';
+    std::vector<std::string> urls;
+    while ((start = urlstr.find_first_not_of(delim, end)) != std::string::npos) {
+        end = urlstr.find(delim, start);
+        std::string url = urlstr.substr(start, end - start);
+        ROS_INFO("Process!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: %s", url.c_str()    );
 
+        if (url.substr(0, 8) == "file:///") {
+            //absolute file path
+            ROS_INFO("FILE: %s", url.c_str()    );
+            urls.push_back(url.substr(7));
+        }
+        std::string prefix = "package://";
+        size_t prefix_len = prefix.length();
+        if (url.substr(0, prefix_len) == prefix) {
+            ROS_INFO("PACKAGE: %s", url.c_str()    );
+            size_t rest = url.find('/', prefix_len);
+            std::string packageName = url.substr(prefix_len,
+                                                 rest - prefix_len);
+            std::string pkgPath = ros::package::getPath(packageName);
+            std::string restStr = url.substr(rest);
+            if (pkgPath.empty()) {
+                continue;
+            } else {
+                urls.push_back(pkgPath + url.substr(rest));
+            }
+        }
+        LOG << "Did not recognize package" << LOGEND;
+        continue;
+    }
+    return urls;
+}
 
 //main
 int main(int argc, char *argv[])
@@ -643,12 +645,19 @@ int main(int argc, char *argv[])
     std::vector<std::string> paramNames;
     nh->getParamNames(paramNames);
 
-
     std::string paramName;
+    std::string urlstr = "";
+    if(pnh->searchParam("config_files", paramName))
+    {
+        if (!pnh->getParam(paramName, urlstr))
+            return 1;
+    }
+
     std::string ritStr = "STEREO_SPLIT";
     if(pnh->searchParam("ros_input_type", paramName))
     {
-        pnh->param<std::string>(paramName, ritStr);
+        if (!pnh->getParam(paramName, ritStr))
+            return 1;
     }
     esvr2_ros::RosInputType rosInputType = esvr2_ros::getRosInputType(ritStr);
     bool stereo = rosInputType != esvr2_ros::RIT_MONO;
@@ -656,14 +665,16 @@ int main(int argc, char *argv[])
     std::string distortionStr = "DIST_RAW";
     if(pnh->searchParam("distortion", paramName))
     {
-        pnh->param<std::string>(paramName, distortionStr);
+        if (!pnh->getParam(paramName, distortionStr))
+            return 1;
     }
     Distortion distortion = getDistortionType(distortionStr);
 
-    bool enableLaparoscopeController = true;
+    bool enableLaparoscopeController = false;
     if(pnh->searchParam("enable_laparoscope_controller", paramName))
     {
-        pnh->param<bool>(paramName, enableLaparoscopeController);
+        if (!pnh->getParam(paramName, enableLaparoscopeController))
+            return 1;
     }
     if(enableLaparoscopeController)
         ROS_INFO("Enabled Laparoscope COntroller");
@@ -676,15 +687,20 @@ int main(int argc, char *argv[])
                     enableLaparoscopeController);
     std::shared_ptr<esvr2_ros::VideoROSNode> sharedRosNode(rosNode);
     std::shared_ptr<Esvr2Config> config = std::make_shared<Esvr2Config>();
-    if (!readConfigYml(
-            rosNode->getEsvr2ConfigFilePath(),
-            config))
+    std::vector<std::string> configFilePaths =
+            getEsvr2ConfigFilePath(urlstr);
+    for (auto it = configFilePaths.begin();
+            it != configFilePaths.end(); it++)
     {
-        ROS_ERROR("Cannot read Configfile.");
-        return 1;
+        if (!readConfigYml(
+                *it,
+                config))
+        {
+            ROS_ERROR("Cannot read Configfile.");
+            return 1;
+        }
     }
     config->resourcePath = RESOURCES_FILE;
-    rosNode->getEsvr2ConfigFilePath();
     std::shared_ptr<LaparoscopeController> laparoscopeController =
             enableLaparoscopeController ? sharedRosNode : nullptr;
     Esvr2 esvr2 = Esvr2(config, sharedRosNode,
