@@ -501,10 +501,10 @@ namespace esvr2_ros
         poseMsg.header.frame_id = "LaparoscopeTargetDOFPose";
         poseMsg.header.seq = mLaparoscopePoseSeq++;
         poseMsg.header.stamp = ros::Time::now();
-        poseMsg.swing_x = pose.swingX;
-        poseMsg.swing_y = pose.swingY;
+        poseMsg.yaw = pose.yaw;
+        poseMsg.pitch = pose.pitch;
+        poseMsg.roll = pose.roll;
         poseMsg.trans_z = pose.transZ;
-        poseMsg.rot_z = pose.rotZ;
         mLaparoscopeCurDOFPosePub.publish(poseMsg);
         return true;
     }
@@ -516,9 +516,9 @@ namespace esvr2_ros
         {
             mLaparoscopeDOFPoseCur = new LaparoscopeDOFPose();
         }
-        mLaparoscopeDOFPoseCur->swingX = laparoscopePose.swing_x;
-        mLaparoscopeDOFPoseCur->swingY = laparoscopePose.swing_y;
-        mLaparoscopeDOFPoseCur->rotZ = laparoscopePose.rot_z;
+        mLaparoscopeDOFPoseCur->yaw = laparoscopePose.yaw;
+        mLaparoscopeDOFPoseCur->pitch = laparoscopePose.pitch;
+        mLaparoscopeDOFPoseCur->roll = laparoscopePose.roll;
         mLaparoscopeDOFPoseCur->transZ = laparoscopePose.trans_z;
         mLaparoscopeDofPoseReady = true;
     }
@@ -541,14 +541,14 @@ namespace esvr2_ros
         {
             mLaparoscopeDOFBoundaries = new LaparoscopeDOFBoundaries();
         }
-        mLaparoscopeDOFBoundaries->swingXMax = laparoscopeDOFBoundaries.swingXMax;
-        mLaparoscopeDOFBoundaries->swingXMin = laparoscopeDOFBoundaries.swingXMin;
-        mLaparoscopeDOFBoundaries->swingYMax = laparoscopeDOFBoundaries.swingYMax;
-        mLaparoscopeDOFBoundaries->swingYMin = laparoscopeDOFBoundaries.swingYMin;
-        mLaparoscopeDOFBoundaries->transZMax = laparoscopeDOFBoundaries.transZMax;
-        mLaparoscopeDOFBoundaries->transZMin = laparoscopeDOFBoundaries.transZMin;
-        mLaparoscopeDOFBoundaries->rotZMax = laparoscopeDOFBoundaries.rotZMax;
-        mLaparoscopeDOFBoundaries->rotZMin = laparoscopeDOFBoundaries.rotZMin;
+        mLaparoscopeDOFBoundaries->yawMax = laparoscopeDOFBoundaries.yaw_max;
+        mLaparoscopeDOFBoundaries->yawMin = laparoscopeDOFBoundaries.yaw_min;
+        mLaparoscopeDOFBoundaries->pitchMax = laparoscopeDOFBoundaries.pitch_max;
+        mLaparoscopeDOFBoundaries->pitchMin = laparoscopeDOFBoundaries.pitch_min;
+        mLaparoscopeDOFBoundaries->transZMax = laparoscopeDOFBoundaries.trans_z_max;
+        mLaparoscopeDOFBoundaries->transZMin = laparoscopeDOFBoundaries.trans_z_min;
+        mLaparoscopeDOFBoundaries->rollMax = laparoscopeDOFBoundaries.roll_max;
+        mLaparoscopeDOFBoundaries->rollMin = laparoscopeDOFBoundaries.roll_min;
         mLaparoscopeDofBoundariesReady = true;
     }
     bool VideoROSNode::getLaparoscopeBoundaries(
