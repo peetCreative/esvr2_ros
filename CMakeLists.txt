@@ -52,3 +52,7 @@ target_compile_definitions( ${PROJECT_NAME} PRIVATE
         "RESOURCES_FILE=\"${Esvr2_RESOURCE_FILE}\"" )
 target_link_libraries( ${PROJECT_NAME}
         ${catkin_LIBRARIES} ${Esvr2_LIBRARIES})
+
+catkin_install_python(PROGRAMS scripts/keyboardPose.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
