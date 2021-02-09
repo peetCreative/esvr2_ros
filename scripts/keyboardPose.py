@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-# !/usr/bin/env python
 import rospy
 import pygame
 import math
 import numpy as np
-from pygame.locals import K_ESCAPE, K_w, K_s, K_a, K_d, K_q, K_e
+from pygame.locals import K_ESCAPE, K_w, K_s, K_a, K_d, K_q, K_e, K_y, K_x
 from mediassist3_panda_pivoting.msg import LaparoscopeDOFPose
 from mediassist3_panda_pivoting.msg import LaparoscopeDOFBoundaries
 
@@ -43,7 +42,13 @@ class TurtleBot:
         self.font = pygame.font.Font(None, 17)
         self.direction = ""
 
-        self.camera_tilt = -0.52359
+        #5mm every step
+        self.step_distance = 0.005
+        #the laparoscope is 30° tilted
+        self.camera_tilt = 0.52359
+        self.add_camera_tilt = False
+        #focus distance in 10 cm
+        self.focus_distance = 0.15
 
     def update_boundaries(self, boundaries):
         self.boundaries = boundaries
@@ -57,39 +62,57 @@ class TurtleBot:
         pose.pitch = self.pose.pitch
         pose.roll = self.pose.roll
         pose.trans_z = self.pose.trans_z
+        trans_pitch = math.asin(
+            (math.sin(math.pi - self.camera_tilt) * pose.trans_z)/
+            self.focus_distance)
+        axis_length = self.focus_distance
+        if pose.trans_z != 0:
+            axis_length = math.asin(
+                (math.sin(math.pi - self.camera_tilt) * pose.trans_z)/
+                math.sin(trans_pitch))
+        step_pitch = self.step_distance / axis_length
+        step_yaw = self.step_distance / axis_length
         if self.direction == "up":
-            pose.pitch = pose.pitch + 0.01
+            pose.pitch = pose.pitch + step_pitch
         if self.direction == "down":
-            pose.pitch = pose.pitch - 0.01
+            pose.pitch = pose.pitch - step_pitch
         if self.direction == "left":
-            pose.yaw = pose.yaw + 0.01
+            pose.yaw = pose.yaw + step_yaw
         if self.direction == "right":
-            pose.yaw = pose.yaw - 0.01
+            pose.yaw = pose.yaw - step_yaw
         if self.direction == "in":
-            pose.trans_z = pose.trans_z + 0.01
+            #TODO: with pitching more distance will be covered
+            pose.trans_z = pose.trans_z + self.step_distance
         if self.direction == "out":
-            pose.trans_z = pose.trans_z - 0.01
+            pose.trans_z = pose.trans_z - self.step_distance
         if (self.boundaries.yaw_min < pose.yaw < self.boundaries.yaw_max and
-                self.boundaries.pitch_min < pose.pitch < self.boundaries.pitch_max):
-            tilt_pitch = pose.pitch + self.camera_tilt
+                self.boundaries.pitch_min < pose.pitch < self.boundaries.pitch_max and
+                self.boundaries.trans_z_min < pose.trans_z < self.boundaries.trans_z_max):
+            if self.pose.trans_z != pose.trans_z:
+                trans_pitch_new = math.asin(
+                    (math.sin(math.pi - self.camera_tilt) * pose.trans_z)/
+                    self.focus_distance)
+                pose.pitch = pose.pitch - (trans_pitch_new - trans_pitch)
+            tilt_pitch = pose.pitch - (self.camera_tilt if self.add_camera_tilt else 0)
             vec1 = np.array([0, math.cos(tilt_pitch), math.sin(tilt_pitch)])
             vec2 = np.array([math.sin(pose.yaw) * math.sin(tilt_pitch),
                              math.cos(tilt_pitch),
                              math.cos(pose.yaw) * math.sin(tilt_pitch)])
-            sign_yaw = 1 if pose.yaw > 0 else -1
-            angle = np.dot(vec1, vec2)
-            if angle < 1.0:
-                pose.roll = sign_yaw * math.acos(angle)
+            sign_pitch = 1 if pose.pitch > 0 else -1
+            sign_yaw = 1 if pose.yaw < 0 else -1
+            z_angle = np.dot(vec1, vec2)
+            if z_angle < 1.0:
+                pose.roll = sign_yaw * sign_pitch * math.acos(z_angle)
             self.pose_publisher.publish(pose)
 
-    def display(self, str):
+    def display(self):
         dirtext = self.font.render(self.direction, True, (255, 255, 255), (159, 182, 205))
         dirtextRect = dirtext.get_rect()
         dirtextRect.centerx = self.screen.get_rect().centerx
-        dirtextRect.centery = self.screen.get_rect().centery + 10
+        dirtextRect.centery = self.screen.get_rect().centery
 
-        str = "pitch:{:.2f} yaw:{:.2f} roll{:.2f}".format(
-            self.pose.pitch, self.pose.yaw, self.pose.roll)
+        str = "pitch:{:.2f} yaw:{:.2f} roll:{:.2f} trans_z:{:.2f}".format(
+            self.pose.pitch, self.pose.yaw, self.pose.roll, self.pose.trans_z)
         posetext = self.font.render(str, True, (255, 255, 255), (159, 182, 205))
         posetextRect = posetext.get_rect()
         posetextRect.centerx = self.screen.get_rect().centerx
@@ -113,15 +136,7 @@ class TurtleBot:
         done = False
         print("asd")
         while not done:
-            self.display(
-                "{} pitch:{} yaw:{} roll{}\n pitch_bound:{},{} yaw_bound:{},{} roll_bound:{},{}".format(
-                    self.direction,
-                    self.pose.pitch, self.pose.yaw, self.pose.roll,
-                    self.boundaries.pitch_min, self.boundaries.pitch_min,
-                    self.boundaries.yaw_min, self.boundaries.yaw_min,
-                    self.boundaries.roll_min, self.boundaries.roll_min
-                ))
-
+            self.display()
             pygame.event.pump()
             keys = pygame.key.get_pressed()
             if keys[K_ESCAPE]:
@@ -143,6 +158,14 @@ class TurtleBot:
                 self.move()
             if keys[K_e]:
                 self.direction = "in"
+                self.move()
+            if keys[K_y]:
+                self.add_camera_tilt = True
+                self.direction = ""
+                self.move()
+            if keys[K_x]:
+                self.add_camera_tilt = False
+                self.direction = ""
                 self.move()
 
 
