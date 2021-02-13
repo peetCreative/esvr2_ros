@@ -39,7 +39,7 @@ class TurtleBot:
         pygame.display.set_caption('Python numbers')
         self.screen.fill((159, 182, 205))
 
-        self.font = pygame.font.Font(None, 17)
+        self.font = pygame.font.Font(None, 30)
         self.direction = ""
 
         #5mm every step
@@ -116,7 +116,7 @@ class TurtleBot:
         posetext = self.font.render(str, True, (255, 255, 255), (159, 182, 205))
         posetextRect = posetext.get_rect()
         posetextRect.centerx = self.screen.get_rect().centerx
-        posetextRect.centery = self.screen.get_rect().centery + 10
+        posetextRect.centery = self.screen.get_rect().centery + 20
 
         str = "pitch_bound:{:.2f},{:.2f} yaw_bound:{:.2f},{:.2f} roll_bound:{:.2f},{:.2f}".format(
             self.boundaries.pitch_min, self.boundaries.pitch_max,
@@ -125,7 +125,7 @@ class TurtleBot:
         boundtext = self.font.render(str, True, (255, 255, 255), (159, 182, 205))
         boundtextRect = boundtext.get_rect()
         boundtextRect.centerx = self.screen.get_rect().centerx
-        boundtextRect.centery = self.screen.get_rect().centery + 20
+        boundtextRect.centery = self.screen.get_rect().centery + 40
 
         self.screen.blit(dirtext, dirtextRect)
         self.screen.blit(posetext, posetextRect)
