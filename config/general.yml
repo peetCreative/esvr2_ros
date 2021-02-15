@@ -1,4 +1,5 @@
 show_ogre_dialog: false
+log_folder: "/path/to/your/logfolder"
 multithreading: false
 show_video: true
 render_video_target: "TO_2D_RECTANGLE"
