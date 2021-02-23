@@ -11,23 +11,23 @@ from mediassist3_panda_pivoting.msg import LaparoscopeDOFBoundaries
 
 class KeyboardDOFController:
 
-    def __init__(self, topic_name):
+    def __init__(self, ns):
         # Creates a node with name 'turtlebot_controller' and make sure it is a
         # unique node (using anonymous=True).
         rospy.init_node('keyboard_dof_controller', anonymous=True)
 
         # Publisher which will publish to the topic '/turtle1/cmd_vel'.
         self.pose_publisher = rospy.Publisher(
-            topic_name,
+            "{}/target/laparoscope_dof_pose".format(ns),
             LaparoscopeDOFPose, queue_size=10)
 
         # A subscriber to the topic '/turtle1/pose'. self.update_pose is called
         # when a message of type Pose is received.
         self.boundaries_subscriber = rospy.Subscriber(
-            '/gazebo/laparoscope/joint_controller/laparoscope_dof_boundaries',
+            "{}/laparoscope_dof_boundaries".format(ns),
             LaparoscopeDOFBoundaries, self.update_boundaries)
         self.pose_subscriber = rospy.Subscriber(
-            '/gazebo/laparoscope/joint_controller/current/laparoscope_dof_pose',
+            "{}/current/laparoscope_dof_pose".format(ns),
             LaparoscopeDOFPose, self.update_pose)
 
         self.pose = LaparoscopeDOFPose()
@@ -171,12 +171,12 @@ class KeyboardDOFController:
 
 if __name__ == '__main__':
 
-    topic_name = '/gazebo/laparoscope/joint_controller/target/laparoscope_dof_pose'
+    namespace = '/gazebo/laparoscope/joint_controller'
     parser = argparse.ArgumentParser(description='Node to which shows field where you can control DOFPose.')
-    parser.add_argument('--topic_name', help='topic name to publish to', default=topic_name)
+    parser.add_argument('--namespace', help='topic name to publish to', default=namespace)
     args = parser.parse_args()
     try:
-        x = KeyboardDOFController(args.topic_name)
+        x = KeyboardDOFController(args.namespace)
         x.start()
     except rospy.ROSInterruptException:
         pass
