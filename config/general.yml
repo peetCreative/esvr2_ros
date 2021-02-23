@@ -6,6 +6,7 @@ render_video_target: "TO_2D_RECTANGLE"
 debug_screen: false
 head_hight: 1.25
 controller_type: "OPT0"
+log_folder: "/home/peetcreative/Documents/Logs"
 hmd_info:
   width: 1680
   height: 1512

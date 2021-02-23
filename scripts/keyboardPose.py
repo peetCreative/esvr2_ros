@@ -4,20 +4,21 @@ import pygame
 import math
 import numpy as np
 from pygame.locals import K_ESCAPE, K_w, K_s, K_a, K_d, K_q, K_e, K_y, K_x
+import argparse
 from mediassist3_panda_pivoting.msg import LaparoscopeDOFPose
 from mediassist3_panda_pivoting.msg import LaparoscopeDOFBoundaries
 
 
-class TurtleBot:
+class KeyboardDOFController:
 
-    def __init__(self):
+    def __init__(self, topic_name):
         # Creates a node with name 'turtlebot_controller' and make sure it is a
         # unique node (using anonymous=True).
-        rospy.init_node('turtlebot_controller', anonymous=True)
+        rospy.init_node('keyboard_dof_controller', anonymous=True)
 
         # Publisher which will publish to the topic '/turtle1/cmd_vel'.
         self.pose_publisher = rospy.Publisher(
-            '/gazebo/laparoscope/joint_controller/target/laparoscope_dof_pose',
+            topic_name,
             LaparoscopeDOFPose, queue_size=10)
 
         # A subscriber to the topic '/turtle1/pose'. self.update_pose is called
@@ -29,7 +30,7 @@ class TurtleBot:
             '/gazebo/laparoscope/joint_controller/current/laparoscope_dof_pose',
             LaparoscopeDOFPose, self.update_pose)
 
-        self.current_pose = LaparoscopeDOFPose()
+        self.pose = LaparoscopeDOFPose()
         self.boundaries = LaparoscopeDOFBoundaries()
         # rospy.Timer(rospy.Duration(0.1), self.checkKeyboard)
         self.rate = rospy.Rate(10)
@@ -134,7 +135,6 @@ class TurtleBot:
 
     def start(self):
         done = False
-        print("asd")
         while not done:
             self.display()
             pygame.event.pump()
@@ -170,8 +170,13 @@ class TurtleBot:
 
 
 if __name__ == '__main__':
+
+    topic_name = '/gazebo/laparoscope/joint_controller/target/laparoscope_dof_pose'
+    parser = argparse.ArgumentParser(description='Node to which shows field where you can control DOFPose.')
+    parser.add_argument('--topic_name', help='topic name to publish to', default=topic_name)
+    args = parser.parse_args()
     try:
-        x = TurtleBot()
+        x = KeyboardDOFController(args.topic_name)
         x.start()
     except rospy.ROSInterruptException:
         pass
