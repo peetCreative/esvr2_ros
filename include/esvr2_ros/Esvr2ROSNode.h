@@ -7,8 +7,9 @@
 #include "Esvr2LaparoscopeController.h"
 #include "Esvr2Component.h"
 
-#include "mediassist3_panda_pivoting/LaparoscopeDOFPose.h"
-#include "mediassist3_panda_pivoting/LaparoscopeDOFBoundaries.h"
+#include "pivot_control_messages_ros/LaparoscopeDOFPose.h"
+#include "pivot_control_messages_ros/LaparoscopeDOFBoundaries.h"
+#include "PivotControlMessages.h"
 
 #include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
@@ -90,8 +91,8 @@ namespace esvr2_ros
         ros::Subscriber mLaparoscopeBoundariesSub;
         ros::Subscriber mLaparoscopePoseSub;
         int mLaparoscopePoseSeq;
-        LaparoscopeDOFPose *mLaparoscopeDOFPoseCur;
-        LaparoscopeDOFBoundaries *mLaparoscopeDOFBoundaries;
+        pivot_control_messages::DOFPose *mLaparoscopeDOFPoseCur;
+        pivot_control_messages::DOFBoundaries *mLaparoscopeDOFBoundaries;
 
         void newROSCameraInfoCallback();
     public:
@@ -123,15 +124,15 @@ namespace esvr2_ros
         bool isReady() override;
 
         bool moveLaparoscopeTo(
-                LaparoscopeDOFPose);
+                pivot_control_messages::DOFPose);
         void laparoscopeDOFPoseCallback(
-                const mediassist3_panda_pivoting::LaparoscopeDOFPose &laparoscopePose);
+                const pivot_control_messages_ros::LaparoscopeDOFPose &laparoscopePose);
         bool getLaparoscopePose(
-                LaparoscopeDOFPose &laparoscopeDofPose);
+                pivot_control_messages::DOFPose &laparoscopeDofPose);
         void laparoscopeDOFBoundariesCallback(
-                const mediassist3_panda_pivoting::LaparoscopeDOFBoundaries &laparoscopeDOFBoundaries);
+                const pivot_control_messages_ros::LaparoscopeDOFBoundaries &laparoscopeDOFBoundaries);
         bool getLaparoscopeBoundaries(
-                LaparoscopeDOFBoundaries &laparoscopeDofBoundaries);
+                pivot_control_messages::DOFBoundaries &laparoscopeDofBoundaries);
 
     };
 }

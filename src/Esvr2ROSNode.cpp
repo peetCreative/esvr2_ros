@@ -4,8 +4,8 @@
 #include "Esvr2VideoLoader.h"
 #include "Esvr2ParseYml.h"
 
-#include "mediassist3_panda_pivoting/LaparoscopeDOFPose.h"
-#include "mediassist3_panda_pivoting/LaparoscopeDOFBoundaries.h"
+#include "pivot_control_messages_ros/LaparoscopeDOFPose.h"
+#include "pivot_control_messages_ros/LaparoscopeDOFBoundaries.h"
 
 #include "opencv2/opencv.hpp"
 
@@ -27,6 +27,7 @@
 #include <mutex>
 
 using namespace esvr2;
+using namespace pivot_control_messages_ros;
 
 namespace esvr2_ros
 {
@@ -234,7 +235,7 @@ namespace esvr2_ros
         if(mEnableLaparoscopeController)
         {
             mLaparoscopeCurDOFPosePub = mNh->advertise<
-                    mediassist3_panda_pivoting::LaparoscopeDOFPose>(
+                    pivot_control_messages_ros::LaparoscopeDOFPose>(
                             "target/laparoscope_dof_pose", 1);
             mLaparoscopeBoundariesSub = mNh->subscribe(
                             "laparoscope_dof_boundaries", 1,
@@ -494,9 +495,9 @@ namespace esvr2_ros
     }
 
     bool VideoROSNode::moveLaparoscopeTo(
-            LaparoscopeDOFPose pose)
+            pivot_control_messages::DOFPose pose)
     {
-        mediassist3_panda_pivoting::LaparoscopeDOFPose poseMsg;
+        pivot_control_messages_ros::LaparoscopeDOFPose poseMsg;
         poseMsg.header = std_msgs::Header();
         poseMsg.header.frame_id = "LaparoscopeTargetDOFPose";
         poseMsg.header.seq = mLaparoscopePoseSeq++;
@@ -510,11 +511,12 @@ namespace esvr2_ros
     }
 
     void VideoROSNode::laparoscopeDOFPoseCallback(
-            const mediassist3_panda_pivoting::LaparoscopeDOFPose &laparoscopePose)
+            const pivot_control_messages_ros::LaparoscopeDOFPose &laparoscopePose)
     {
         if (!mLaparoscopeDOFPoseCur)
         {
-            mLaparoscopeDOFPoseCur = new LaparoscopeDOFPose();
+            mLaparoscopeDOFPoseCur =
+                    new pivot_control_messages::DOFPose();
         }
         mLaparoscopeDOFPoseCur->yaw = laparoscopePose.yaw;
         mLaparoscopeDOFPoseCur->pitch = laparoscopePose.pitch;
@@ -525,7 +527,8 @@ namespace esvr2_ros
 
     //good question if we should implement this as service or as message
     //for now we do messages
-    bool VideoROSNode::getLaparoscopePose(LaparoscopeDOFPose &laparoscopePose)
+    bool VideoROSNode::getLaparoscopePose(
+            pivot_control_messages::DOFPose &laparoscopePose)
     {
         if (!mLaparoscopeDOFPoseCur)
             return false;
@@ -534,12 +537,13 @@ namespace esvr2_ros
     }
 
     void VideoROSNode::laparoscopeDOFBoundariesCallback(
-            const mediassist3_panda_pivoting::LaparoscopeDOFBoundaries
-            &laparoscopeDOFBoundaries)
+            const pivot_control_messages_ros::LaparoscopeDOFBoundaries
+                &laparoscopeDOFBoundaries)
     {
         if (!mLaparoscopeDOFBoundaries)
         {
-            mLaparoscopeDOFBoundaries = new LaparoscopeDOFBoundaries();
+            mLaparoscopeDOFBoundaries =
+                    new pivot_control_messages::DOFBoundaries();
         }
         mLaparoscopeDOFBoundaries->yawMax = laparoscopeDOFBoundaries.yaw_max;
         mLaparoscopeDOFBoundaries->yawMin = laparoscopeDOFBoundaries.yaw_min;
@@ -552,7 +556,7 @@ namespace esvr2_ros
         mLaparoscopeDofBoundariesReady = true;
     }
     bool VideoROSNode::getLaparoscopeBoundaries(
-            LaparoscopeDOFBoundaries &laparoscopeDofBoundaries)
+            pivot_control_messages::DOFBoundaries &laparoscopeDofBoundaries)
     {
         if (!mLaparoscopeDOFBoundaries)
             return false;

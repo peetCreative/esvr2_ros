@@ -6,7 +6,6 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/CMake")
 SET(CMAKE_BUILD_TYPE "Debug")
 
 find_package(catkin REQUIRED COMPONENTS
-    mediassist3_panda_pivoting
     cv_bridge
     roscpp
     sensor_msgs
@@ -15,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     tf2_ros
     message_filters
     pluginlib
+    pivot_control_messages_ros
 )
 
 #find_package(Esvr2)
@@ -32,11 +32,17 @@ catkin_package(
 
 set( CMAKE_CURRENT_BIN_DIR "${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}" )
 
+if (TARGET pivot_control_messages)
+    message("found pivot_control_messages")
+else()
+    add_subdirectory(pivot_control_messages)
+endif()
 
 include_directories(
     include/esvr2_ros
     ${catkin_INCLUDE_DIRS}
     ${Esvr2_INCLUDE_DIR}
+    pivot_control_messages/include
 )
 
 macro( add_recursive dir retVal )
@@ -48,10 +54,15 @@ add_recursive(src SOURCES)
 add_executable( ${PROJECT_NAME}
         ${SOURCES} )
 
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+
 target_compile_definitions( ${PROJECT_NAME} PRIVATE
         "RESOURCES_FILE=\"${Esvr2_RESOURCE_FILE}\"" )
 target_link_libraries( ${PROJECT_NAME}
-        ${catkin_LIBRARIES} ${Esvr2_LIBRARIES})
+        ${catkin_LIBRARIES}
+        ${Esvr2_LIBRARIES}
+        pivot_control_messages
+        pivot_control_messages_ros)
 
 catkin_install_python(PROGRAMS scripts/keyboardPose.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
