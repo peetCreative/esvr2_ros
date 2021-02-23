@@ -123,15 +123,15 @@ namespace esvr2_ros
 
         bool isReady() override;
 
-        bool moveLaparoscopeTo(
+        bool setTargetDOFPose(
                 pivot_control_messages::DOFPose);
         void laparoscopeDOFPoseCallback(
                 const pivot_control_messages_ros::LaparoscopeDOFPose &laparoscopePose);
-        bool getLaparoscopePose(
+        bool getCurrentDOFPose(
                 pivot_control_messages::DOFPose &laparoscopeDofPose);
         void laparoscopeDOFBoundariesCallback(
                 const pivot_control_messages_ros::LaparoscopeDOFBoundaries &laparoscopeDOFBoundaries);
-        bool getLaparoscopeBoundaries(
+        bool getDOFBoundaries(
                 pivot_control_messages::DOFBoundaries &laparoscopeDofBoundaries);
 
     };

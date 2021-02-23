@@ -247,8 +247,8 @@ namespace esvr2_ros
         //TODO:This should not make da diddeerence
         else
         {
-            mLaparoscopeDofBoundariesReady = true;
-            mLaparoscopeDofPoseReady = true;
+            mDofBoundariesReady = true;
+            mDofPoseReady = true;
         }
         return true;
     }
@@ -494,7 +494,7 @@ namespace esvr2_ros
         return !mNh->ok() || mQuit;
     }
 
-    bool VideoROSNode::moveLaparoscopeTo(
+    bool VideoROSNode::setTargetDOFPose(
             pivot_control_messages::DOFPose pose)
     {
         pivot_control_messages_ros::LaparoscopeDOFPose poseMsg;
@@ -522,12 +522,12 @@ namespace esvr2_ros
         mLaparoscopeDOFPoseCur->pitch = laparoscopePose.pitch;
         mLaparoscopeDOFPoseCur->roll = laparoscopePose.roll;
         mLaparoscopeDOFPoseCur->transZ = laparoscopePose.trans_z;
-        mLaparoscopeDofPoseReady = true;
+        mDofPoseReady = true;
     }
 
     //good question if we should implement this as service or as message
     //for now we do messages
-    bool VideoROSNode::getLaparoscopePose(
+    bool VideoROSNode::getCurrentDOFPose(
             pivot_control_messages::DOFPose &laparoscopePose)
     {
         if (!mLaparoscopeDOFPoseCur)
@@ -553,9 +553,9 @@ namespace esvr2_ros
         mLaparoscopeDOFBoundaries->transZMin = laparoscopeDOFBoundaries.trans_z_min;
         mLaparoscopeDOFBoundaries->rollMax = laparoscopeDOFBoundaries.roll_max;
         mLaparoscopeDOFBoundaries->rollMin = laparoscopeDOFBoundaries.roll_min;
-        mLaparoscopeDofBoundariesReady = true;
+        mDofBoundariesReady = true;
     }
-    bool VideoROSNode::getLaparoscopeBoundaries(
+    bool VideoROSNode::getDOFBoundaries(
             pivot_control_messages::DOFBoundaries &laparoscopeDofBoundaries)
     {
         if (!mLaparoscopeDOFBoundaries)
