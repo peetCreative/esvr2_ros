@@ -63,7 +63,3 @@ target_link_libraries( ${PROJECT_NAME}
         ${Esvr2_LIBRARIES}
         pivot_control_messages
         pivot_control_messages_ros)
-
-catkin_install_python(PROGRAMS scripts/keyboardPose.py
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
