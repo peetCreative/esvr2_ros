@@ -52,9 +52,11 @@ endmacro()
 add_recursive(src SOURCES)
 
 add_executable( ${PROJECT_NAME}
-        ${SOURCES} )
+        ${SOURCES})
 
-add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}
+        ${catkin_EXPORTED_TARGETS}
+        pivot_control_messages_ros_gencpp)
 
 target_compile_definitions( ${PROJECT_NAME} PRIVATE
         "RESOURCES_FILE=\"${Esvr2_RESOURCE_FILE}\"" )

@@ -4,6 +4,8 @@
 #include "Esvr2VideoLoader.h"
 #include "Esvr2ParseYml.h"
 
+#include "PivotControlMessagesRos.h"
+#include "pivot_control_messages_ros/SetPose.h"
 #include "pivot_control_messages_ros/LaparoscopeDOFPose.h"
 #include "pivot_control_messages_ros/LaparoscopeDOFBoundaries.h"
 
@@ -12,6 +14,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <ros/ros.h>
 #include <ros/package.h>
+#include "ros/advertise_service_options.h"
 #include <geometry_msgs/TransformStamped.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CameraInfo.h>
@@ -25,9 +28,12 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <mutex>
+#include <memory>
 
 using namespace esvr2;
 using namespace pivot_control_messages_ros;
+
+std::vector<std::string> getEsvr2ConfigFilePath(std::string urlstr);
 
 namespace esvr2_ros
 {
@@ -54,30 +60,16 @@ namespace esvr2_ros
 //            PoseState(),
             LaparoscopeController(),
             mNh( nh ),
-            mSubImageLeftRaw( nullptr ),
-            mSubImageRightRaw( nullptr ),
-            mSubImageLeftUndist( nullptr ),
-            mSubImageRightUndist( nullptr ),
-            mSubImageLeftUndistRect( nullptr ),
-            mSubImageRightUndistRect( nullptr ),
-            mApproximateSyncRaw( nullptr ),
-            mApproximateSyncUndist( nullptr ),
-            mApproximateSyncUndistRect( nullptr ),
             mRosInputType(rosInputType),
             mRosTopicNameRaw( "image_raw" ),
             mRosTopicNameUndist( "image_undist" ),
             mRosTopicNameUndistRect( "image_undist_rect" ),
             mIsCameraInfoInit{ false, false },
             mSubscribePose(true),
-            mTfBuffer(nullptr),
-            mTfListener(nullptr),
             mEnableLaparoscopeController(enableLaparoscopeController),
-            mLaparoscopeCurDOFPosePub(),
+            mLaparoscopeTargetDOFPosePub(),
             mLaparoscopeBoundariesSub(),
-            mLaparoscopePoseSub(),
-            mLaparoscopePoseSeq(0),
-            mLaparoscopeDOFPoseCur(nullptr),
-            mLaparoscopeDOFBoundaries(nullptr)
+            mLaparoscopeCurDOFPoseSub()
     {
         mRosNamespace = mNh->getNamespace();
 //        if (cameraConfig)
@@ -193,6 +185,14 @@ namespace esvr2_ros
                             boost::bind( &VideoROSNode::newROSImageCallback, this,_1, _2));
                 }
         }
+
+        //Service force
+        if(!ros::service::exists("force_set_dof_pose", true))
+            mForceSetDofPoseService = mNh->advertiseService(
+                    "force_set_dof_pose",
+                    &VideoROSNode::forceSetDofPose, this);
+        LOG << "Register Force New Pose Service" << LOGEND;
+
         setDistortion( mDistortion );
 
         if (!mIsCameraInfoInit[LEFT] && !mIsCameraInfoInit[RIGHT])
@@ -234,13 +234,13 @@ namespace esvr2_ros
 
         if(mEnableLaparoscopeController)
         {
-            mLaparoscopeCurDOFPosePub = mNh->advertise<
+            mLaparoscopeTargetDOFPosePub = mNh->advertise<
                     pivot_control_messages_ros::LaparoscopeDOFPose>(
                             "target/laparoscope_dof_pose", 1);
             mLaparoscopeBoundariesSub = mNh->subscribe(
                             "laparoscope_dof_boundaries", 1,
                             &VideoROSNode::laparoscopeDOFBoundariesCallback, this);
-            mLaparoscopePoseSub = mNh->subscribe(
+            mLaparoscopeCurDOFPoseSub = mNh->subscribe(
                             "current/laparoscope_dof_pose", 1,
                             &VideoROSNode::laparoscopeDOFPoseCallback, this);
         }
@@ -497,16 +497,15 @@ namespace esvr2_ros
     bool VideoROSNode::setTargetDOFPose(
             pivot_control_messages::DOFPose pose)
     {
-        pivot_control_messages_ros::LaparoscopeDOFPose poseMsg;
-        poseMsg.header = std_msgs::Header();
-        poseMsg.header.frame_id = "LaparoscopeTargetDOFPose";
-        poseMsg.header.seq = mLaparoscopePoseSeq++;
-        poseMsg.header.stamp = ros::Time::now();
-        poseMsg.yaw = pose.yaw;
-        poseMsg.pitch = pose.pitch;
-        poseMsg.roll = pose.roll;
-        poseMsg.trans_z = pose.transZ;
-        mLaparoscopeCurDOFPosePub.publish(poseMsg);
+        //if we are about to force a new position don't interupt
+        if (mIsForceTargetDOFPose)
+            return false;
+        LaparoscopeDOFPose poseMsg =
+                pivot_control_messages_ros::toROSDOFPose(
+                        pose,
+                        "LaparoscopeTargetDOFPose",
+                        mLaparoscopePoseSeq++);
+        mLaparoscopeTargetDOFPosePub.publish(poseMsg);
         return true;
     }
 
@@ -518,6 +517,12 @@ namespace esvr2_ros
             mLaparoscopeDOFPoseCur =
                     new pivot_control_messages::DOFPose();
         }
+        if (mIsForceTargetDOFPose &&
+            mLaparoscopeDOFPoseCur->closeTo(mForceTargetDOFPose, 0.01, 0.005))
+        {
+            //We reached a good point
+            mIsForceTargetDOFPose = false;
+        }
         mLaparoscopeDOFPoseCur->yaw = laparoscopePose.yaw;
         mLaparoscopeDOFPoseCur->pitch = laparoscopePose.pitch;
         mLaparoscopeDOFPoseCur->roll = laparoscopePose.roll;
@@ -525,8 +530,6 @@ namespace esvr2_ros
         mDofPoseReady = true;
     }
 
-    //good question if we should implement this as service or as message
-    //for now we do messages
     bool VideoROSNode::getCurrentDOFPose(
             pivot_control_messages::DOFPose &laparoscopePose)
     {
@@ -561,6 +564,19 @@ namespace esvr2_ros
         if (!mLaparoscopeDOFBoundaries)
             return false;
         laparoscopeDofBoundaries = *mLaparoscopeDOFBoundaries;
+        return true;
+    }
+
+    bool VideoROSNode::forceSetDofPose(
+            SetPose::Request& req, SetPose::Response& resp)
+    {
+        //TODO: at least close
+        LaparoscopeDOFPose forceTargetDOFPoseMsg = toROSDOFPose(
+                    req, "LaparoscopeTargetDOFPose", mLaparoscopePoseSeq++);
+        mLaparoscopeTargetDOFPosePub.publish(forceTargetDOFPoseMsg);
+        mForceTargetDOFPose = toDOFPose(req);
+        mIsForceTargetDOFPose = true;
+        resp.success = true;
         return true;
     }
 
@@ -685,16 +701,15 @@ int main(int argc, char *argv[])
     else
         ROS_INFO("DISABLED Laparoscope COntroller");
 
-    esvr2_ros::VideoROSNode *rosNode =
-            new esvr2_ros::VideoROSNode(
+    std::shared_ptr<esvr2_ros::VideoROSNode> sharedRosNode =
+            std::make_shared<esvr2_ros::VideoROSNode>(
                     nh, distortion, stereo, rosInputType,
                     enableLaparoscopeController);
-    std::shared_ptr<esvr2_ros::VideoROSNode> sharedRosNode(rosNode);
     std::shared_ptr<Esvr2Config> config = std::make_shared<Esvr2Config>();
     std::vector<std::string> configFilePaths =
             getEsvr2ConfigFilePath(urlstr);
     for (auto it = configFilePaths.begin();
-            it != configFilePaths.end(); it++)
+         it != configFilePaths.end(); it++)
     {
         if (!readConfigYml(
                 *it,
@@ -707,8 +722,7 @@ int main(int argc, char *argv[])
     config->resourcePath = RESOURCES_FILE;
     std::shared_ptr<LaparoscopeController> laparoscopeController =
             enableLaparoscopeController ? sharedRosNode : nullptr;
-    Esvr2 esvr2 = Esvr2(config, sharedRosNode,
-                        laparoscopeController,nullptr);
+    Esvr2 esvr2(config, sharedRosNode, laparoscopeController,nullptr);
 //            Esvr2( config, rosNode, rosNode, rosNode);
     return esvr2.run();
 }

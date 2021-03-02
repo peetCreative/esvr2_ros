@@ -7,6 +7,7 @@
 #include "Esvr2LaparoscopeController.h"
 #include "Esvr2Component.h"
 
+#include "pivot_control_messages_ros/SetPose.h"
 #include "pivot_control_messages_ros/LaparoscopeDOFPose.h"
 #include "pivot_control_messages_ros/LaparoscopeDOFBoundaries.h"
 #include "PivotControlMessages.h"
@@ -63,17 +64,17 @@ namespace esvr2_ros
             public esvr2::LaparoscopeController
     {
     private:
-        ros::NodeHandle *mNh;
+        ros::NodeHandle *mNh {nullptr};
         ros::Subscriber mSubImage;
-        message_filters::Subscriber<sensor_msgs::Image>* mSubImageLeftRaw;
-        message_filters::Subscriber<sensor_msgs::Image>* mSubImageRightRaw;
-        std::shared_ptr<ApproximateSync> mApproximateSyncRaw;
-        message_filters::Subscriber<sensor_msgs::Image>* mSubImageLeftUndist;
-        message_filters::Subscriber<sensor_msgs::Image>* mSubImageRightUndist;
-        std::shared_ptr<ApproximateSync> mApproximateSyncUndist;
-        message_filters::Subscriber<sensor_msgs::Image>* mSubImageLeftUndistRect;
-        message_filters::Subscriber<sensor_msgs::Image>* mSubImageRightUndistRect;
-        std::shared_ptr<ApproximateSync> mApproximateSyncUndistRect;
+        message_filters::Subscriber<sensor_msgs::Image>* mSubImageLeftRaw {nullptr};
+        message_filters::Subscriber<sensor_msgs::Image>* mSubImageRightRaw {nullptr};
+        std::shared_ptr<ApproximateSync> mApproximateSyncRaw {nullptr};
+        message_filters::Subscriber<sensor_msgs::Image>* mSubImageLeftUndist {nullptr};
+        message_filters::Subscriber<sensor_msgs::Image>* mSubImageRightUndist {nullptr};
+        std::shared_ptr<ApproximateSync> mApproximateSyncUndist {nullptr};
+        message_filters::Subscriber<sensor_msgs::Image>* mSubImageLeftUndistRect {nullptr};
+        message_filters::Subscriber<sensor_msgs::Image>* mSubImageRightUndistRect {nullptr};
+        std::shared_ptr<ApproximateSync> mApproximateSyncUndistRect {nullptr};
         ros::Subscriber mSubCamInfoLeft;
         ros::Subscriber mSubCamInfoRight;
         RosInputType mRosInputType;
@@ -83,16 +84,20 @@ namespace esvr2_ros
         bool mIsCameraInfoInit[2];
         bool mSubscribePose;
 
-        tf2_ros::Buffer *mTfBuffer;
-        tf2_ros::TransformListener *mTfListener;
+        tf2_ros::Buffer *mTfBuffer {nullptr};
+        tf2_ros::TransformListener *mTfListener {nullptr};
 
         bool mEnableLaparoscopeController;
-        ros::Publisher mLaparoscopeCurDOFPosePub;
+        ros::Publisher mLaparoscopeTargetDOFPosePub;
         ros::Subscriber mLaparoscopeBoundariesSub;
-        ros::Subscriber mLaparoscopePoseSub;
-        int mLaparoscopePoseSeq;
-        pivot_control_messages::DOFPose *mLaparoscopeDOFPoseCur;
-        pivot_control_messages::DOFBoundaries *mLaparoscopeDOFBoundaries;
+        ros::Subscriber mLaparoscopeCurDOFPoseSub;
+        int mLaparoscopePoseSeq {0};
+        ros::ServiceServer mForceSetDofPoseService;
+        bool mIsForceTargetDOFPose {false};
+        pivot_control_messages::DOFPose mForceTargetDOFPose;
+
+        pivot_control_messages::DOFPose *mLaparoscopeDOFPoseCur {nullptr};
+        pivot_control_messages::DOFBoundaries *mLaparoscopeDOFBoundaries {nullptr};
 
         void newROSCameraInfoCallback();
     public:
@@ -134,6 +139,9 @@ namespace esvr2_ros
         bool getDOFBoundaries(
                 pivot_control_messages::DOFBoundaries &laparoscopeDofBoundaries);
 
+        bool forceSetDofPose(
+                pivot_control_messages_ros::SetPose::Request&,
+                pivot_control_messages_ros::SetPose::Response&);
     };
 }
 
