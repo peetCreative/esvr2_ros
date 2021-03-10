@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 #find_package(Esvr2)
 SET(Esvr2_HOME)
-SET(Esvr2_LIBRARIES ${Esvr2_HOME}/lib/libEsvr2_lib.so)
+SET(Esvr2_LIBRARIES ${Esvr2_HOME}/lib/libEsvr2.so)
 SET(Esvr2_INCLUDE_DIR ${Esvr2_HOME}/include/esvr2)
 SET(Esvr2_RESOURCE_FILE ${Esvr2_HOME}/bin/Resources.cfg)
 
