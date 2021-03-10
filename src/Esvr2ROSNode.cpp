@@ -445,6 +445,22 @@ namespace esvr2_ros
         }
     }
 
+    void VideoROSNode::setStereoCameraConfig (
+            StereoCameraConfig stereoCameraConfig)
+    {
+        mCameraConfig = stereoCameraConfig;
+        updateDestinationSize(
+                mCameraConfig.leftCameraConfig.width,
+                mCameraConfig.leftCameraConfig.height, 4u,
+                mCameraConfig.leftCameraConfig.width* mCameraConfig.leftCameraConfig.height* 4u );
+        updateMaps();
+        mSubCamInfoLeft.shutdown();
+        mSubCamInfoRight.shutdown();
+        mIsCameraInfoInit[LEFT] = true;
+        mIsCameraInfoInit[RIGHT] = true;
+        mReady = true;
+    }
+
     void VideoROSNode::deinitialize(void)
     {
         //TODO: delete all the other things
@@ -690,38 +706,47 @@ int main(int argc, char *argv[])
     }
     Distortion distortion = getDistortionType(distortionStr);
 
-    bool enableLaparoscopeController = false;
-    if(pnh->searchParam("enable_laparoscope_controller", paramName))
+    bool enablePivotController = false;
+    if(pnh->searchParam("enable_pivot_controller", paramName))
     {
-        if (!pnh->getParam(paramName, enableLaparoscopeController))
+        if (!pnh->getParam(paramName, enablePivotController))
             return 1;
     }
-    if(enableLaparoscopeController)
-        ROS_INFO("Enabled Laparoscope COntroller");
+    if(enablePivotController)
+        ROS_INFO("Enabled Pivot Controller");
     else
-        ROS_INFO("DISABLED Laparoscope COntroller");
+        ROS_INFO("DISABLED Pivot Controller");
 
     std::shared_ptr<esvr2_ros::VideoROSNode> sharedRosNode =
             std::make_shared<esvr2_ros::VideoROSNode>(
                     nh, distortion, stereo, rosInputType,
-                    enableLaparoscopeController);
+                    enablePivotController);
     std::shared_ptr<Esvr2Config> config = std::make_shared<Esvr2Config>();
+    VideoInputConfigPtr videoInputConfig = std::make_shared<VideoInputConfig>();
     std::vector<std::string> configFilePaths =
             getEsvr2ConfigFilePath(urlstr);
     for (auto it = configFilePaths.begin();
          it != configFilePaths.end(); it++)
     {
         if (!readConfigYml(
-                *it,
-                config))
+                *it, config, videoInputConfig))
         {
             ROS_ERROR("Cannot read Configfile.");
             return 1;
         }
     }
+    if(videoInputConfig->stereoCameraConfig.leftCameraConfig.valid() &&
+            videoInputConfig->stereoCameraConfig.rightCameraConfig.valid())
+    {
+        ROS_INFO_STREAM_NAMED(
+                "esvr2_ros",
+                "set camera config");
+        sharedRosNode->setStereoCameraConfig(
+                videoInputConfig->stereoCameraConfig);
+    }
     config->resourcePath = RESOURCES_FILE;
     std::shared_ptr<LaparoscopeController> laparoscopeController =
-            enableLaparoscopeController ? sharedRosNode : nullptr;
+            enablePivotController ? sharedRosNode : nullptr;
     Esvr2 esvr2(config, sharedRosNode, laparoscopeController,nullptr);
 //            Esvr2( config, rosNode, rosNode, rosNode);
     return esvr2.run();

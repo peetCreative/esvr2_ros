@@ -119,6 +119,8 @@ namespace esvr2_ros
         template <int eye>
         void newROSCameraInfoCallback (
                 const sensor_msgs::CameraInfo::ConstPtr& camInfo );
+        void setStereoCameraConfig (
+                StereoCameraConfig stereoCameraConfig);
 
         bool initialize(void);
         void deinitialize(void);

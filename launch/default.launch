@@ -1,20 +1,33 @@
 <launch>
     <group ns="esvr2">
         <arg name="custom_config_files" default="" />
+        <arg name="enable_pivot_controller" default="true"/>
+        <arg name="enable_blackmagic_node" default="false" />
+        <arg name="ros_input_type" default="STEREO_SPLIT_RAW"/>
+        <!-- force STEREO_SLICED if blackmagic_camera is enabled -->
+        <arg if="$(arg enable_blackmagic_node)" name="rit" value="STEREO_SLICED"/>
+        <arg unless="$(arg enable_blackmagic_node)" name="rit" value="$(arg ros_input_type)"/>
 
-        <node name="esvr2_ros" pkg="esvr2_ros" type="esvr2_ros" >
-            <param name="enable_laparoscope_controller" type="bool" value="True"/>
-            <param name="ros_input_type" value="STEREO_SPLIT_RAW" />
+        <node name="esvr2_ros" pkg="esvr2_ros" type="esvr2_ros"
+            output="screen" required="true">
+            <param name="enable_pivot_controller" type="bool" value="$(arg enable_pivot_controller)"/>
+            <param name="ros_input_type" value="$(arg rit)" />
             <param name="distortion" value="RAW" />
             <param name="config_files" value="package://esvr2_ros/config/general.yml;$(arg custom_config_files)" />
-            <remap from="left/image_raw" to="/gazebo/laparoscope/left/image_raw"/>
-            <remap from="right/image_raw" to="/gazebo/laparoscope/right/image_raw"/>
-            <remap from="left/camera_info" to="/gazebo/laparoscope/left/camera_info"/>
-            <remap from="right/camera_info" to="/gazebo/laparoscope/right/camera_info"/>
+            <remap from="image" to="/laparoscope/camera/image_raw"/>
+            <remap from="left/image_raw" to="/laparoscope/camera/left/image_raw"/>
+            <remap from="right/image_raw" to="/laparoscope/camera/right/image_raw"/>
+            <remap from="left/camera_info" to="/laparoscope/camera/left/camera_info"/>
+            <remap from="right/camera_info" to="/laparoscope/camera/right/camera_info"/>
 
-            <remap from="current/laparoscope_dof_pose" to="/gazebo/laparoscope/joint_controller/current/laparoscope_dof_pose"/>
-            <remap from="laparoscope_dof_boundaries" to="/gazebo/laparoscope/joint_controller/laparoscope_dof_boundaries"/>
-            <remap from="target/laparoscope_dof_pose" to="/gazebo/laparoscope/joint_controller/target/laparoscope_dof_pose"/>
+            <remap from="current/laparoscope_dof_pose" to="/laparoscope/pivot_controller/current/laparoscope_dof_pose"/>
+            <remap from="laparoscope_dof_boundaries" to="/laparoscope/pivot_controller/laparoscope_dof_boundaries"/>
+            <remap from="target/laparoscope_dof_pose" to="/laparoscope/pivot_controller/target/laparoscope_dof_pose"/>
         </node>
     </group>
+    <node name="blackmagic_camera" pkg="blackmagic_camera" type="blackmagic_camera_node"
+    if="$(arg enable_blackmagic_node)">
+        <remap from="~/image_raw" to="/laparoscope/camera/image_raw"/>
+    </node>
+
 </launch>
