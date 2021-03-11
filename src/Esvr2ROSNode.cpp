@@ -323,7 +323,7 @@ namespace esvr2_ros
         try
         {
             cv_ptr = cv_bridge::toCvShare(
-                    imgRaw, sensor_msgs::image_encodings::BGR8 );
+                    imgRaw,  imgRaw->encoding);
         }
         catch (cv_bridge::Exception& e)
         {
@@ -342,7 +342,7 @@ namespace esvr2_ros
         try
         {
             cv_ptr = cv_bridge::toCvShare(
-                    imgRaw, sensor_msgs::image_encodings::BGR8 );
+                    imgRaw, imgRaw->encoding );
             cv::Mat image = cv_ptr->image.clone();
             setImageDataFromRaw( &image, nullptr );
         }
@@ -379,9 +379,9 @@ namespace esvr2_ros
         {
             //TRY BGRA8
             cv_ptr_left = cv_bridge::toCvShare(
-                    imgLeft, sensor_msgs::image_encodings::BGR8 );
+                    imgLeft, imgLeft->encoding );
             cv_ptr_right = cv_bridge::toCvShare(
-                    imgRight, sensor_msgs::image_encodings::BGR8 );
+                    imgRight, imgRight->encoding );
             //TODO:copy to new mat probably inefficient
             cv::Mat left = cv_ptr_left->image.clone();
             cv::Mat right = cv_ptr_right->image.clone();
