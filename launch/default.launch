@@ -1,15 +1,19 @@
 <launch>
+    <arg name="enable_blackmagic_node" default="false" />
+    <arg name="custom_config_files" default="" />
+    <arg name="enable_pivot_controller" default="true"/>
+    <arg name="ros_input_type" default="STEREO_SPLIT_RAW"/>
+    <!-- force STEREO_SLICED if blackmagic_camera is enabled -->
+    <arg if="$(arg enable_blackmagic_node)" name="rit" value="STEREO_SLICED"/>
+    <arg unless="$(arg enable_blackmagic_node)" name="rit" value="$(arg ros_input_type)"/>
+    <arg name="rosbag_path" default=""/>
+    <arg name="esvr2_launch_prefix" default=""/>
+
     <group ns="esvr2">
-        <arg name="custom_config_files" default="" />
-        <arg name="enable_pivot_controller" default="true"/>
-        <arg name="enable_blackmagic_node" default="false" />
-        <arg name="ros_input_type" default="STEREO_SPLIT_RAW"/>
-        <!-- force STEREO_SLICED if blackmagic_camera is enabled -->
-        <arg if="$(arg enable_blackmagic_node)" name="rit" value="STEREO_SLICED"/>
-        <arg unless="$(arg enable_blackmagic_node)" name="rit" value="$(arg ros_input_type)"/>
 
         <node name="esvr2_ros" pkg="esvr2_ros" type="esvr2_ros"
-            output="screen" required="true">
+            output="screen" required="true"
+            launch-prefix="$(arg esvr2_launch_prefix)">
             <param name="enable_pivot_controller" type="bool" value="$(arg enable_pivot_controller)"/>
             <param name="ros_input_type" value="$(arg rit)" />
             <param name="distortion" value="RAW" />
@@ -29,5 +33,8 @@
     if="$(arg enable_blackmagic_node)">
         <remap from="~/image_raw" to="/laparoscope/camera/image_raw"/>
     </node>
-
+    <node pkg="rosbag" type="play" name="robag_play" output="log" args="$(arg rosbag_path) -l"
+        if="$(eval arg('rosbag_path')  != '')">
+        <remap from="/stereo/camera_driver/image_raw" to="/laparoscope/camera/image_raw"/>
+    </node>
 </launch>
