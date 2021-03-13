@@ -1,11 +1,12 @@
 <launch>
-    <arg name="enable_blackmagic_node" default="false" />
+    <arg name="enable_storz_laparoscope" default="false" />
+    <arg name="enable_old_laparoscope" default="false" />
     <arg name="custom_config_files" default="" />
     <arg name="enable_pivot_controller" default="true"/>
     <arg name="ros_input_type" default="STEREO_SPLIT_RAW"/>
     <!-- force STEREO_SLICED if blackmagic_camera is enabled -->
-    <arg if="$(arg enable_blackmagic_node)" name="rit" value="STEREO_SLICED"/>
-    <arg unless="$(arg enable_blackmagic_node)" name="rit" value="$(arg ros_input_type)"/>
+    <arg if="$(arg enable_storz_laparoscope)" name="rit" value="STEREO_SLICED"/>
+    <arg unless="$(arg enable_storz_laparoscope)" name="rit" value="$(arg ros_input_type)"/>
     <arg name="rosbag_path" default=""/>
     <arg name="esvr2_launch_prefix" default=""/>
 
@@ -30,8 +31,24 @@
         </node>
     </group>
     <node name="blackmagic_camera" pkg="blackmagic_camera" type="blackmagic_camera_node"
-    if="$(arg enable_blackmagic_node)">
+    if="$(arg enable_storz_laparoscope)">
         <remap from="~/image_raw" to="/laparoscope/camera/image_raw"/>
+    </node>
+    <node pkg="rosbag" type="play" name="robag_play" output="log" args="$(arg rosbag_path) -l"
+        if="$(eval arg('rosbag_path')  != '')">
+        <remap from="/stereo/camera_driver/image_raw" to="/laparoscope/camera/image_raw"/>
+    </node>
+    <node name="blackmagic_camera" pkg="blackmagic_camera" type="blackmagic_camera_node"
+    if="$(arg enable_old_laparoscope)">
+        <param name="nCameras" value="2" />
+        <param name="yuv" value="true" />
+        <param name="mode" value="ePAL" />
+        <param name="frame_id" value="camera" />
+        <param name="camera_name" value="camera" />
+        <remap from="~/camera0/image_raw" to="/laparoscope/camera/left/image_raw"/>
+        <remap from="~/camera0/camera_info" to="/laparoscope/camera/left/camera_info"/>
+        <remap from="~/camera1/image_raw" to="/laparoscope/camera/right/image_raw"/>
+        <remap from="~/camera1/camera_info" to="/laparoscope/camera/right/camera_info"/>
     </node>
     <node pkg="rosbag" type="play" name="robag_play" output="log" args="$(arg rosbag_path) -l"
         if="$(eval arg('rosbag_path')  != '')">
