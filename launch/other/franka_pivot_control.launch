@@ -1,0 +1,9 @@
+<launch>
+    <arg name="old_laparoscope" default="True" />
+    <include file="$(find franka_pivot_control_ros)/launch/default.launch">
+        <arg name="robot_ip" value="192.168.2.155" />
+        <arg if="$(arg old_laparoscope)" name="distance_ee_to_pp" value="0.55" />
+        <arg unless="$(arg old_laparoscope)" name="distance_ee_to_pp" value="0.45" />
+        <arg name="dynamic_rel" value="0.05"/>
+    </include>
+</launch>

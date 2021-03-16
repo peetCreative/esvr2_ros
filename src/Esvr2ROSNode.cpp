@@ -76,7 +76,7 @@ public:
                 return false;
         }
 
-        std::string ritStr = "STEREO_SPLIT";
+        std::string ritStr = "NONE";
         if(mPNh.searchParam("ros_input_type", paramName))
         {
             if (!mPNh.getParam(paramName, ritStr))
@@ -93,6 +93,13 @@ public:
         }
         esvr2::Distortion distortion = esvr2::getDistortionType(distortionStr);
 
+        if (rosInputType != esvr2_ros::RIT_NONE)
+        {
+            mVideoLoaderNode =
+                    std::make_shared<esvr2_ros::VideoLoaderROSNode>(
+                            mNh, distortion, stereo, rosInputType);
+        }
+
         bool enablePivotController = false;
         if(mPNh.searchParam("enable_pivot_controller", paramName))
         {
@@ -107,18 +114,6 @@ public:
         else
             ROS_INFO("DISABLED Pivot Controller");
 
-        bool enableVideoLoader = false;
-        if(mPNh.searchParam("enable_video_loader", paramName))
-        {
-            if (!mPNh.getParam(paramName, enableVideoLoader))
-                return false;
-        }
-        if (enableVideoLoader)
-        {
-            mVideoLoaderNode =
-                    std::make_shared<esvr2_ros::VideoLoaderROSNode>(
-                            mNh, distortion, stereo, rosInputType);
-        }
         mConfig = std::make_shared<esvr2::Esvr2Config>();
         esvr2::VideoInputConfigPtr videoInputConfig = std::make_shared<esvr2::VideoInputConfig>();
         std::vector<std::string> configFilePaths =

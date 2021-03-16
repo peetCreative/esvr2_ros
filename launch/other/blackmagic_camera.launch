@@ -1,0 +1,27 @@
+<launch>
+    <arg name="old_laparoscope" default="True" />
+    <arg if="$(arg old_laparoscope)" name="nCameras" value="2" />
+    <arg unless="$(arg old_laparoscope)" name="nCameras" value="1" />
+    <arg if="$(arg old_laparoscope)" name="mode" value="ePAL" />
+    <arg unless="$(arg old_laparoscope)" name="mode" value="eHD1080p50" />
+    <arg if="$(arg old_laparoscope)" name="yuv" value="true" />
+    <arg unless="$(arg old_laparoscope)" name="yuv" value="false" />
+    <arg name="camera_info_folder" value="package://blackmagic_camera/config" />
+    <arg name="frame_id" default="camera" />
+    <arg name="camera_name" default="camera" />
+
+    <node name="blackmagic_camera" pkg="blackmagic_camera" type="blackmagic_camera_node"
+        output="screen" required="true">
+        <param name="nCameras" value="$(arg nCameras)" />
+        <param name="yuv" value="$(arg yuv)" />
+        <param name="mode" value="$(arg mode)" />
+        <param name="frame_id" value="$(arg frame_id)" />
+        <param name="camera_name" value="$(arg camera_name)" />
+        <param name="camera_info_folder" value="$(arg camera_info_folder)" />
+        <remap from="~/image_raw" to="/laparoscope/camera/image_raw"/>
+        <remap from="~/camera0/image_raw" to="/laparoscope/camera/left/image_raw"/>
+        <remap from="~/camera0/camera_info" to="/laparoscope/camera/left/camera_info"/>
+        <remap from="~/camera1/image_raw" to="/laparoscope/camera/right/image_raw"/>
+        <remap from="~/camera1/camera_info" to="/laparoscope/camera/right/camera_info"/>
+    </node>
+</launch>
