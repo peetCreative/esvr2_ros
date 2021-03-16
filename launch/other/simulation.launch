@@ -3,13 +3,14 @@
     <arg name="debug" default="false"/>
     <arg unless="$(arg debug)" name="script_type" value="gzserver"/>
     <arg     if="$(arg debug)" name="script_type" value="debug"/>
+    <arg name="required" default="false"/>
     <include file="$(find mediassist3_simulation)/launch/include/liver.launch"/>
     <group>
         <param name="gazebo/enable_ros_network" value="true" />
     </group>
     <node name="gazebo" pkg="gazebo_ros" type="$(arg script_type)" respawn="false" output="screen"
           args="-e ode -s libgazebo_ros_api_plugin.so $(arg extra_gazebo_args) $(find mediassist3_simulation)/worlds/phantom.world"
-          required="false">
+          required="$(arg required)">
           <remap from="~/laparoscope/left" to="/laparoscope/camera/left"/>
           <remap from="~/laparoscope/right" to="/laparoscope/camera/right"/>
           <remap from="~/laparoscope/joint_controller/current/laparoscope_dof_pose" to="/laparoscope/pivot_controller/current/laparoscope_dof_pose"/>

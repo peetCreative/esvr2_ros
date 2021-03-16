@@ -2,11 +2,13 @@
     <arg name="old_laparoscope" default="true"/>
     <include file="$(find esvr2_ros)/launch/other/blackmagic_camera.launch">
         <arg name="old_laparoscope" value="$(arg old_laparoscope)"/>
+        <arg name="required" value="true"/>
     </include>
     <include file="$(find esvr2_ros)/launch/other/esvr2.launch">
         <arg if="$(arg old_laparoscope)" name="video_loader" value="old"/>
         <arg unless="$(arg old_laparoscope)" name="video_loader" value="storz"/>
         <arg name="enable_pivot_controller" value="false"/>
         <arg name="esvr2_launch_prefix" value=""/>
+        <arg name="required" value="true"/>
     </include>
 </launch>

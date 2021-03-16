@@ -9,9 +9,10 @@
     <arg name="camera_info_folder" value="package://blackmagic_camera/config" />
     <arg name="frame_id" default="camera" />
     <arg name="camera_name" default="camera" />
+    <arg name="required" default="false"/>
 
     <node name="blackmagic_camera" pkg="blackmagic_camera" type="blackmagic_camera_node"
-        output="screen" required="true">
+        output="screen" required="$(arg required)">
         <param name="nCameras" value="$(arg nCameras)" />
         <param name="yuv" value="$(arg yuv)" />
         <param name="mode" value="$(arg mode)" />

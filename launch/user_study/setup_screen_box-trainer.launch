@@ -2,6 +2,7 @@
     <arg name="old_laparoscope" default="true"/>
     <include file="$(find esvr2_ros)/launch/other/blackmagic_camera.launch">
         <arg name="old_laparoscope" value="$(arg old_laparoscope)"/>
+        <arg name="required" value="true"/>
     </include>
     <node name="image_view" pkg="rqt_image_view"
           type="rqt_image_view" output="screen"
