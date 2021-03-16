@@ -49,21 +49,20 @@ namespace esvr2_ros {
                         &VideoLoaderROSNode::newROSImageMono, this);
                 break;
             case RIT_STEREO_SLICED:
-                ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_MONO");
-                LOG << "RIT_STEREO_SLICED" << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_STEREO_SLICED");
                 topic = mRosNamespace + "/image";
-                LOG << "Subscribe to " << topic << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                 mSubImage = mNh.subscribe(
                         topic, 1,
                         &VideoLoaderROSNode::newROSImageStereoSliced, this);
                 break;
             case RIT_STEREO_SPLIT_RAW:
-                LOG << "RIT_STEREO_SPLIT_RAW" << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_STEREO_SPLIT_RAW");
                 topic = mRosNamespace + "/left/" + mRosTopicNameRaw;
-                LOG << "Subscribe to " << topic << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                 mSubImageLeftRaw.subscribe(mNh, topic, 20);
                 topic = mRosNamespace + "/right/" + mRosTopicNameRaw;
-                LOG << "Subscribe to " << topic << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                 mSubImageRightRaw.subscribe(mNh, topic, 20);
                 mApproximateSyncRaw.connectInput(
                                 mSubImageLeftRaw, mSubImageRightRaw);
@@ -71,14 +70,14 @@ namespace esvr2_ros {
                         boost::bind(&VideoLoaderROSNode::newROSImageCallback, this, _1, _2));
                 break;
             case RIT_STEREO_SPLIT:
-                LOG << "RIT_STEREO_SPLIT" << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_STEREO_SPLIT");
                 if(!mRosTopicNameRaw.empty())
                 {
                     topic = mRosNamespace + "/left/" + mRosTopicNameRaw;
-                    LOG << "Subscribe to " << topic << LOGEND;
+                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                     mSubImageLeftRaw.subscribe(mNh, topic, 20);
                     topic = mRosNamespace + "/right/" + mRosTopicNameRaw;
-                    LOG << "Subscribe to " << topic << LOGEND;
+                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                     mSubImageRightRaw.subscribe(mNh, topic, 20);
                     mApproximateSyncRaw.connectInput(
                                     mSubImageLeftRaw, mSubImageRightRaw);
@@ -88,10 +87,10 @@ namespace esvr2_ros {
                 if(!mRosTopicNameUndist.empty())
                 {
                     topic = mRosNamespace + "/left/" + mRosTopicNameUndist;
-                    LOG << "Subscribe to " << topic << LOGEND;
+                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                     mSubImageLeftUndist.subscribe(mNh, topic, 20);
                     topic = mRosNamespace + "/right/" + mRosTopicNameUndist;
-                    LOG << "Subscribe to " << topic << LOGEND;
+                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                     mSubImageRightUndist.subscribe(mNh, topic, 20);
                     mApproximateSyncUndist.connectInput(
                             mSubImageLeftUndist, mSubImageRightUndist);
@@ -101,10 +100,10 @@ namespace esvr2_ros {
                 if(!mRosTopicNameUndistRect.empty())
                 {
                     topic = mRosNamespace + "/left/" + mRosTopicNameUndistRect;
-                    LOG << "Subscribe to " << topic << LOGEND;
+                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                     mSubImageLeftUndistRect.subscribe(mNh, topic, 20);
                     topic = mRosNamespace + "/right/" + mRosTopicNameUndistRect;
-                    LOG << "Subscribe to " << topic << LOGEND;
+                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
                     mSubImageRightUndistRect.subscribe(mNh, topic, 20);
                     mApproximateSyncUndistRect.connectInput(
                             mSubImageLeftUndistRect, mSubImageRightUndistRect);
@@ -118,19 +117,18 @@ namespace esvr2_ros {
         if (!mIsCameraInfoInit[LEFT] && !mIsCameraInfoInit[RIGHT])
         {
             topic = mRosNamespace + "/left/camera_info";
-            LOG << "Subscribe to " << topic << LOGEND;
+            ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
             mSubCamInfoLeft = mNh.subscribe(
                     topic, 1,
                     &VideoLoaderROSNode::newROSCameraInfoCallback<LEFT>, this);
             topic = mRosNamespace + "/right/camera_info";
-            LOG << "Subscribe to " << topic << LOGEND;
+            ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
             mSubCamInfoRight = mNh.subscribe(
                     topic, 1,
                     &VideoLoaderROSNode::newROSCameraInfoCallback<RIGHT>, this);
 //             if( mSubCamInfoLeft.getNumPublishers() == 0 ||
 //                 mSubCamInfoRight.getNumPublishers() == 0 )
 //             {
-//                 LOG << "no Publisher for camera_info" << LOGEND;
 //                 return false;
 //             }
         }
@@ -155,7 +153,7 @@ namespace esvr2_ros {
         {
             if(mDistortion == esvr2::DIST_RAW)
             {
-                LOG << "Image set to DIST_RAW" << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_RAW");
                 mSubImageLeftRaw.subscribe();
                 mSubImageRightRaw.subscribe();
             }
@@ -166,7 +164,7 @@ namespace esvr2_ros {
             }
             if(mDistortion == esvr2::DIST_UNDISTORT)
             {
-                LOG << "Image set to DIST_UNDISTORT" << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_UNDISTORT");
                 mSubImageLeftUndist.subscribe();
                 mSubImageRightUndist.subscribe();
             }
@@ -177,7 +175,7 @@ namespace esvr2_ros {
             }
             if(mDistortion == esvr2::DIST_UNDISTORT_RECTIFY)
             {
-                LOG << "Image set to DIST_UNDISTORT_RECTIFY" << LOGEND;
+                ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_UNDISTORT_RECTIFY");
                 mSubImageLeftUndistRect.subscribe();
                 mSubImageRightUndistRect.subscribe();
             }
@@ -201,7 +199,7 @@ namespace esvr2_ros {
         }
         catch (cv_bridge::Exception& e)
         {
-            LOG << "cv_bridge exception:" << e.what() << LOGEND;
+            ROS_WARN_STREAM_NAMED("esvr2_ros", "cv_bridge exception:" << e.what());
             return;
         }
         setImageDataFromSplitSliced(&(cv_ptr->image));
@@ -223,7 +221,7 @@ namespace esvr2_ros {
         catch (cv_bridge::Exception& e)
         {
             quit();
-            std::cout <<"cv_bridge exception: " << e.what() << std::endl;
+            ROS_WARN_STREAM_NAMED("esvr2_ros", "cv_bridge exception:" << e.what());
             return;
         }
 //        catch( Ogre::Exception &e )
@@ -292,7 +290,7 @@ namespace esvr2_ros {
     void VideoLoaderROSNode::newROSCameraInfoCallback(
             const sensor_msgs::CameraInfo::ConstPtr& camInfo )
     {
-        LOG << "camera_info " << eye << LOGEND;
+        ROS_INFO_STREAM_NAMED("esvr2_ros", "camera_info " << eye);
         if ( !mIsCameraInfoInit[eye] )
         {
             mCameraConfig.cfg[eye]->eye_str = eye == LEFT ? "left": "right";

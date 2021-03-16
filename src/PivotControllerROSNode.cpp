@@ -40,7 +40,7 @@ namespace esvr2_ros
             mForceSetDofPoseService = mNh.advertiseService(
                     "force_set_dof_pose",
                     &PivotControllerROSNode::forceSetDofPose, this);
-        LOG << "Register Force New Pose Service" << LOGEND;
+        ROS_INFO_STREAM_NAMED("esvr2_ros",  "Register Force New Pose Service");
 
         mLaparoscopeTargetDOFPosePub = mNh.advertise<
                 pivot_control_messages_ros::LaparoscopeDOFPose>(

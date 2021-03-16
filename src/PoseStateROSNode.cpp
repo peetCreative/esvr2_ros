@@ -35,7 +35,6 @@ namespace esvr2_ros
         try{
             if(!mTfBuffer._frameExists("checkerboard"))
             {
-//                 LOG << "no frame named checkerboard" << LOGEND;
                 return;
             }
             pose = mTfBuffer.lookupTransform( "checkerboard", "camera", ros::Time(0));
