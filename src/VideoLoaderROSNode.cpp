@@ -256,6 +256,14 @@ namespace esvr2_ros {
                     imgLeft, imgLeft->encoding );
             cv_ptr_right = cv_bridge::toCvShare(
                     imgRight, imgRight->encoding );
+            if(imgLeft->encoding == "rgb8")
+                mColorConversion = cv::COLOR_RGB2BGRA;
+            if(imgLeft->encoding == "bgr8")
+                mColorConversion = cv::COLOR_BGR2BGRA;
+            if(imgLeft->encoding == "rgba8")
+                mColorConversion = cv::COLOR_RGBA2BGRA;
+            if(imgLeft->encoding == "bgra8")
+                mColorConversion = cv::COLOR_COLORCVT_MAX;
             //TODO:copy to new mat probably inefficient
             cv::Mat left = cv_ptr_left->image.clone();
             cv::Mat right = cv_ptr_right->image.clone();
