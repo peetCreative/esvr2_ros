@@ -5,7 +5,7 @@ show_video: true
 render_video_target: "TO_2D_RECTANGLE"
 debug_screen: false
 head_hight: 1.25
-controller_type: "OPT0"
+controller_type: "OPT2"
 hmd_info:
   width: 1680
   height: 1512
