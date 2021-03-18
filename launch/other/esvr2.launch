@@ -25,5 +25,6 @@
         <remap from="pivot_controller/current/laparoscope_dof_pose" to="/laparoscope/pivot_controller/current/laparoscope_dof_pose"/>
         <remap from="pivot_controller/laparoscope_dof_boundaries" to="/laparoscope/pivot_controller/laparoscope_dof_boundaries"/>
         <remap from="pivot_controller/target/laparoscope_dof_pose" to="/laparoscope/pivot_controller/target/laparoscope_dof_pose"/>
+        <remap from="pivot_controller/force_set_dof_pose" to="/laparoscope/pivot_controller/force_set_dof_pose"/>
     </node>
 </launch>
