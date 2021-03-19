@@ -21,6 +21,10 @@ std::vector<std::string> getEsvr2ConfigFilePath(std::string urlstr)
         end = urlstr.find(delim, start);
         std::string url = urlstr.substr(start, end - start);
         ROS_INFO("Process: %s", url.c_str()    );
+        if (url.size() > 0 && url.at(0) == '/')
+        {
+            urls.push_back(url);
+        }
 
         if (url.substr(0, 8) == "file:///") {
             //absolute file path
