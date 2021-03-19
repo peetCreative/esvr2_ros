@@ -42,8 +42,7 @@ namespace esvr2_ros
         mForceSetDofPoseTimer = mNh.createTimer(
                 ros::Duration(ros::Rate(30)),
                 boost::bind(&PivotControllerROSNode::forceSetDofPosePublish, this, _1),
-                false);
-        mForceSetDofPoseTimer.stop();
+                false, false);
         ROS_INFO_STREAM_NAMED("esvr2_ros",  "Register Force New Pose Service");
 
         mLaparoscopeTargetDOFPosePub = mNh.advertise<
