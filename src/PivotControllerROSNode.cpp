@@ -36,8 +36,7 @@ namespace esvr2_ros
     bool PivotControllerROSNode::initialize()
     {
         //Service force
-        if(!ros::service::exists("force_set_dof_pose", true))
-            mForceSetDofPoseService = mNh.advertiseService(
+        mForceSetDofPoseService = mNh.advertiseService(
                     "force_set_dof_pose",
                     &PivotControllerROSNode::forceSetDofPose, this);
         ROS_INFO_STREAM_NAMED("esvr2_ros",  "Register Force New Pose Service");
