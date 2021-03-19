@@ -39,6 +39,11 @@ namespace esvr2_ros
         mForceSetDofPoseService = mNh.advertiseService(
                     "force_set_dof_pose",
                     &PivotControllerROSNode::forceSetDofPose, this);
+        mForceSetDofPoseTimer = mNh.createTimer(
+                ros::Duration(ros::Rate(30)),
+                boost::bind(&PivotControllerROSNode::forceSetDofPosePublish, this, _1),
+                false);
+        mForceSetDofPoseTimer.stop();
         ROS_INFO_STREAM_NAMED("esvr2_ros",  "Register Force New Pose Service");
 
         mLaparoscopeTargetDOFPosePub = mNh.advertise<
@@ -89,9 +94,10 @@ namespace esvr2_ros
                     std::make_unique<pivot_control_messages::DOFPose>();
         }
         if (mIsForceTargetDOFPose &&
-            mLaparoscopeDOFPoseCur->closeTo(mForceTargetDOFPose, 0.01, 0.005))
+            mLaparoscopeDOFPoseCur->closeTo(mForceTargetDOFPose, 0.01, 0.001))
         {
             //We reached a good point
+            mForceSetDofPoseTimer.stop();
             mIsForceTargetDOFPose = false;
         }
         *mLaparoscopeDOFPoseCur = pivot_control_messages_ros::toDOFPose(laparoscopePose);
@@ -132,13 +138,21 @@ namespace esvr2_ros
     bool PivotControllerROSNode::forceSetDofPose(
             SetPose::Request& req, SetPose::Response& resp)
     {
-        //TODO: at least close
         LaparoscopeDOFPose forceTargetDOFPoseMsg = toROSDOFPose(
                 req, "LaparoscopeTargetDOFPose", mLaparoscopePoseSeq++);
-        mLaparoscopeTargetDOFPosePub.publish(forceTargetDOFPoseMsg);
         mForceTargetDOFPose = toDOFPose(req);
         mIsForceTargetDOFPose = true;
         resp.success = true;
+        mForceSetDofPoseTimer.start();
+        ROS_WARN_NAMED("esvr2_ros", "started forceSetDOFPoseTImer");
         return true;
+    }
+
+    void PivotControllerROSNode::forceSetDofPosePublish(const ros::TimerEvent&)
+    {
+        std::cout << "publich force new pose" << std::endl;
+        LaparoscopeDOFPose forceTargetDOFPoseMsg = toROSDOFPose(
+                mForceTargetDOFPose, "LaparoscopeTargetDOFPose", mLaparoscopePoseSeq++);
+        mLaparoscopeTargetDOFPosePub.publish(forceTargetDOFPoseMsg);
     }
 }

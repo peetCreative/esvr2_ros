@@ -23,6 +23,7 @@ namespace esvr2_ros {
         ros::Subscriber mLaparoscopeCurDOFPoseSub;
         int mLaparoscopePoseSeq {0};
         ros::ServiceServer mForceSetDofPoseService;
+        ros::Timer mForceSetDofPoseTimer;
         bool mIsForceTargetDOFPose {false};
         pivot_control_messages::DOFPose mForceTargetDOFPose;
 
@@ -53,5 +54,6 @@ namespace esvr2_ros {
         bool forceSetDofPose(
                 pivot_control_messages_ros::SetPose::Request&,
                 pivot_control_messages_ros::SetPose::Response&);
+        void forceSetDofPosePublish(const ros::TimerEvent&);
     };
 }
