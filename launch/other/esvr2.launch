@@ -4,7 +4,8 @@
     <arg name="enable_old_laparoscope" default="$(eval arg('video_loader') == 'old')" />
     <arg name="ros_input_type" default="$(eval 'STEREO_SLICED' if arg('video_loader') == 'storz' else 'STEREO_SPLIT_RAW' if arg('video_loader') == 'old' else 'NONE' )"/>
     <arg name="enable_pivot_controller" default="true"/>
-    <arg name="custom_config_files" default="$(eval '{}/config/camera_info.yml'.format(find('esvr2_ros')) if arg('video_loader') == 'storz' else '' )" />
+    <arg name="custom_config_files_camera_info" default="$(eval '{}/config/camera_info.yml'.format(find('esvr2_ros')) if arg('video_loader') == 'storz' else '' )" />
+    <arg name="custom_config_files" default="$(find esvr2_ros)/config/custom_config.yaml" />
     <!-- force STEREO_SLICED if blackmagic_camera is enabled -->
     <arg name="esvr2_launch_prefix" default=""/>
     <arg name="required" default="false"/>
@@ -15,7 +16,7 @@
         <param name="enable_pivot_controller" type="bool" value="$(arg enable_pivot_controller)"/>
         <param name="ros_input_type" value="$(arg ros_input_type)" />
         <param name="distortion" value="RAW" />
-        <param name="config_files" value="package://esvr2_ros/config/general.yml;$(arg custom_config_files)" />
+        <param name="config_files" value="package://esvr2_ros/config/general.yml;$(arg custom_config_files_camera_info);$(arg custom_config_files)" />
         <remap from="video_loader/image" to="/laparoscope/camera/image_raw"/>
         <remap from="video_loader/left/image_raw" to="/laparoscope/camera/left/image_raw"/>
         <remap from="video_loader/right/image_raw" to="/laparoscope/camera/right/image_raw"/>
