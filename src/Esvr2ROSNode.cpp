@@ -6,7 +6,10 @@
 
 #include <ros/ros.h>
 #include <ros/package.h>
-#include "ros/advertise_service_options.h"
+#include "ros/timer.h"
+#include <ros/time.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
 
 #include <mutex>
 #include <memory>
@@ -55,6 +58,10 @@ class Esvr2ROSNode
 private:
     ros::NodeHandle mNh;
     ros::NodeHandle mPNh;
+    //TODO: move this to seperate file
+    std::shared_ptr<esvr2::Esvr2> mEsvr2 {nullptr};
+    ros::Timer mHeadPoseTimer;
+    int mSeq {0};
 public:
     std::shared_ptr<esvr2_ros::PivotControllerROSNode> mPivotControllerNode {nullptr};
     std::shared_ptr<esvr2_ros::VideoLoaderROSNode> mVideoLoaderNode {nullptr};
@@ -143,6 +150,37 @@ public:
         mConfig->resourcePath = RESOURCES_FILE;
         return true;
     }
+
+    void publishHeadPose()
+    {
+        std::array<esvr2::Real, 3> translation;
+        std::array<esvr2::Real, 4> rotation;
+        mEsvr2->getHeadPose(translation, rotation);
+        static tf2_ros::TransformBroadcaster br;
+        geometry_msgs::TransformStamped transformStamped;
+        transformStamped.header.stamp = ros::Time::now();
+        transformStamped.header.seq = mSeq++;
+        transformStamped.header.frame_id = "vr_world";
+        transformStamped.child_frame_id = "vr_head";
+        transformStamped.transform.translation.x = translation.at(0);
+        transformStamped.transform.translation.y = translation.at(1);
+        transformStamped.transform.translation.z = translation.at(2);
+        transformStamped.transform.rotation.w = rotation.at(0);
+        transformStamped.transform.rotation.x = rotation.at(1);
+        transformStamped.transform.rotation.y = rotation.at(2);
+        transformStamped.transform.rotation.z = rotation.at(3);
+        br.sendTransform(transformStamped);
+    }
+
+    void startHeadPosePublisher(std::shared_ptr<esvr2::Esvr2> esvr2)
+    {
+        mEsvr2 = esvr2;
+        mHeadPoseTimer = mNh.createTimer(
+                ros::Duration(ros::Rate(30)),
+                boost::bind(&Esvr2ROSNode::publishHeadPose, this),
+                false,
+                true);
+    }
 };
 
 void update(esvr2::uint64 t)
@@ -161,13 +199,13 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-
-    esvr2::Esvr2 esvr2(esvr2RosNode.mConfig);
+    std::shared_ptr<esvr2::Esvr2> esvr2 = std::make_shared<esvr2::Esvr2>(esvr2RosNode.mConfig);
     if (esvr2RosNode.mVideoLoaderNode)
-        esvr2.setVideoLoader(esvr2RosNode.mVideoLoaderNode);
+        esvr2->setVideoLoader(esvr2RosNode.mVideoLoaderNode);
     if (esvr2RosNode.mPivotControllerNode)
-        esvr2.setLaparoscopeController(esvr2RosNode.mPivotControllerNode);
-    esvr2.registerUpdateCallback(boost::bind(&update, _1));
-    bool succ = esvr2.run();
+        esvr2->setLaparoscopeController(esvr2RosNode.mPivotControllerNode);
+    esvr2->registerUpdateCallback(boost::bind(&update, _1));
+    esvr2RosNode.startHeadPosePublisher(esvr2);
+    bool succ = esvr2->run();
     return succ;
 }
