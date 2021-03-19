@@ -55,8 +55,6 @@ namespace esvr2_ros
         mLaparoscopeCurDOFPoseSub = mNh.subscribe(
                 "current/laparoscope_dof_pose", 1,
                 &PivotControllerROSNode::laparoscopeDOFPoseCallback, this);
-        mDofBoundariesReady = true;
-        mDofPoseReady = true;
         return true;
     }
 
