@@ -1,4 +1,5 @@
 <launch>
+    <rosparam command="load" file="$(find esvr2_ros)/config/custom_param.yaml"/>
     <arg name="old_laparoscope" default="true"/>
     <include file="$(find esvr2_ros)/launch/other/blackmagic_camera.launch">
         <arg name="old_laparoscope" value="$(arg old_laparoscope)"/>
@@ -9,4 +10,8 @@
           required="true">
         <remap from="image" to="/laparoscope/camera/left/image_raw"/>
     </node>
+    <include file="$(find pivot_control_messages_ros)/launch/controlUserStudy.launch">
+        <arg name="tmux" value="true"/>
+        <arg name="setup_id" value="screen-boxtrainer"/>
+    </include>
 </launch>

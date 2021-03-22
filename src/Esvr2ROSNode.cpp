@@ -58,6 +58,7 @@ class Esvr2ROSNode
 private:
     ros::NodeHandle mNh;
     ros::NodeHandle mPNh;
+    bool mIsUserStudy {false};
     //TODO: move this to seperate file
     std::shared_ptr<esvr2::Esvr2> mEsvr2 {nullptr};
     ros::Timer mHeadPoseTimer;
@@ -67,6 +68,8 @@ public:
     std::shared_ptr<esvr2_ros::VideoLoaderROSNode> mVideoLoaderNode {nullptr};
 //    std::shared_ptr<esvr2_ros::PoseStateROSNode> mPoseStateNode {nullptr};
     std::shared_ptr<esvr2::Esvr2Config> mConfig {nullptr};
+    std::string mParticipantId {};
+    std::string mSetupId {};
 
     Esvr2ROSNode():
             mNh(),
@@ -85,6 +88,40 @@ public:
         {
             if (!mPNh.getParam(paramName, urlstr))
                 return false;
+        }
+
+        std::string logFolder {};
+        if(mPNh.searchParam("log_folder", paramName))
+        {
+            if (!mPNh.getParam(paramName, logFolder))
+                return false;
+        }
+
+        if(mPNh.searchParam("is_userstudy", paramName))
+        {
+            if (!mPNh.getParam(paramName, mIsUserStudy))
+                return false;
+        }
+
+        if(mIsUserStudy)
+        {
+            while((mParticipantId.empty() || mSetupId.empty()) && ros::ok())
+            {
+                if(mPNh.searchParam("participant_id", paramName))
+                {
+                    if (!mPNh.getParam(paramName, mParticipantId))
+                        return false;
+                }
+
+                if(mPNh.searchParam("setup_id",  paramName))
+                {
+                    if (!mPNh.getParam(paramName, mSetupId))
+                    {
+                        return false;
+                    }
+                }
+                sleep(1);
+            }
         }
 
         std::string ritStr = "NONE";
@@ -148,6 +185,8 @@ public:
                     videoInputConfig->stereoCameraConfig);
         }
         mConfig->resourcePath = RESOURCES_FILE;
+        if(!logFolder.empty())
+            mConfig->logFolder = logFolder;
         return true;
     }
 
@@ -197,6 +236,11 @@ int main(int argc, char *argv[])
     {
         ROS_ERROR_NAMED("esvr2_ros", "could not initialize Main-Node");
         return 0;
+    }
+
+    if(!esvr2RosNode.mParticipantId.empty() && !esvr2RosNode.mSetupId.empty())
+    {
+        esvr2RosNode.mConfig->logPrefix = esvr2RosNode.mParticipantId + "_" + esvr2RosNode.mSetupId;
     }
 
     std::shared_ptr<esvr2::Esvr2> esvr2 = std::make_shared<esvr2::Esvr2>(esvr2RosNode.mConfig);
