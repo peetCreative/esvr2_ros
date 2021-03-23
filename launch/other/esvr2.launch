@@ -10,7 +10,6 @@
     <arg name="esvr2_launch_prefix" default=""/>
     <arg name="required" default="false"/>
     <arg name="is_userstudy" default="false"/>
-    <arg name="log_folder" default="/tmp"/>
 
     <node name="esvr2_ros" pkg="esvr2_ros" type="esvr2_ros"
         output="screen" required="$(arg required)"
@@ -20,7 +19,6 @@
         <param name="distortion" value="RAW" />
         <param name="config_files" value="package://esvr2_ros/config/general.yml;$(arg custom_config_files_camera_info);$(arg custom_config_files)" />
         <param name="is_userstudy" value="$(arg is_userstudy)"/>
-        <param name="log_folder" value="$(arg log_folder)"/>
         <remap from="video_loader/image" to="/laparoscope/camera/image_raw"/>
         <remap from="video_loader/left/image_raw" to="/laparoscope/camera/left/image_raw"/>
         <remap from="video_loader/right/image_raw" to="/laparoscope/camera/right/image_raw"/>
@@ -31,5 +29,6 @@
         <remap from="pivot_controller/laparoscope_dof_boundaries" to="/laparoscope/pivot_controller/laparoscope_dof_boundaries"/>
         <remap from="pivot_controller/target/laparoscope_dof_pose" to="/laparoscope/pivot_controller/target/laparoscope_dof_pose"/>
         <remap from="pivot_controller/force_set_dof_pose" to="/laparoscope/pivot_controller/force_set_dof_pose"/>
+        <remap from="display/quit" to="/laparoscope/display/quit"/>
     </node>
 </launch>

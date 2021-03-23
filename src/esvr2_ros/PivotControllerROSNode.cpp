@@ -22,12 +22,14 @@ std::vector<std::string> getEsvr2ConfigFilePath(std::string urlstr);
 
 namespace esvr2_ros
 {
-    PivotControllerROSNode::PivotControllerROSNode(ros::NodeHandle &nh):
+    PivotControllerROSNode::PivotControllerROSNode(
+            ros::NodeHandle &nh, VideoLoaderROSNodePtr videoLoaderRosNodePtr):
             LaparoscopeController(),
             mNh( nh , "pivot_controller" ),
             mLaparoscopeTargetDOFPosePub(),
             mLaparoscopeBoundariesSub(),
-            mLaparoscopeCurDOFPoseSub()
+            mLaparoscopeCurDOFPoseSub(),
+            mVideoLoaderROSNodePtr(videoLoaderRosNodePtr)
     {}
 
     PivotControllerROSNode::~PivotControllerROSNode()
@@ -93,6 +95,7 @@ namespace esvr2_ros
         if (mIsForceTargetDOFPose &&
             mLaparoscopeDOFPoseCur->closeTo(mForceTargetDOFPose, 0.01, 0.001))
         {
+            mVideoLoaderROSNodePtr->setShow(true);
             //We reached a good point
             mForceSetDofPoseTimer.stop();
             mIsForceTargetDOFPose = false;
@@ -135,6 +138,7 @@ namespace esvr2_ros
     bool PivotControllerROSNode::forceSetDofPose(
             SetPose::Request& req, SetPose::Response& resp)
     {
+        mVideoLoaderROSNodePtr->setShow(false);
         LaparoscopeDOFPose forceTargetDOFPoseMsg = toROSDOFPose(
                 req, "LaparoscopeTargetDOFPose", mLaparoscopePoseSeq++);
         mForceTargetDOFPose = toDOFPose(req);

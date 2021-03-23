@@ -8,7 +8,9 @@ SET(CMAKE_BUILD_TYPE "Debug")
 find_package(catkin REQUIRED COMPONENTS
     cv_bridge
     roscpp
+    std_srvs
     sensor_msgs
+    image_transport
     geometry_msgs
     tf2
     tf2_ros
@@ -49,10 +51,19 @@ macro( add_recursive dir retVal )
     file( GLOB_RECURSE ${retVal} ${dir}/*.h ${dir}/*.cpp ${dir}/*.c )
 endmacro()
 
-add_recursive(src SOURCES)
+add_recursive(src/screen_player SOURCES_SCREEN_PLAYER)
 
+add_executable( screen_player
+        ${SOURCES_SCREEN_PLAYER})
+add_dependencies( screen_player
+        ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries( screen_player
+        ${catkin_LIBRARIES})
+
+add_recursive(src/esvr2_ros SOURCES_ESVR2_ROS)
 add_executable( ${PROJECT_NAME}
-        ${SOURCES})
+        ${SOURCES_ESVR2_ROS})
 
 add_dependencies(${PROJECT_NAME}
         ${catkin_EXPORTED_TARGETS}

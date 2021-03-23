@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VideoLoaderROSNode.h"
+
 #include "Esvr2.h"
 #include "Esvr2LaparoscopeController.h"
 #include "Esvr2Component.h"
@@ -31,8 +33,11 @@ namespace esvr2_ros {
             mLaparoscopeDOFPoseCur {nullptr};
         std::unique_ptr<pivot_control_messages::DOFBoundaries>
             mLaparoscopeDOFBoundaries {nullptr};
+
+        VideoLoaderROSNodePtr mVideoLoaderROSNodePtr {nullptr};
     public:
-        explicit PivotControllerROSNode(ros::NodeHandle &nodeHandle);
+        explicit PivotControllerROSNode(
+                ros::NodeHandle &nodeHandle, VideoLoaderROSNodePtr videoLoaderRosNode);
         ~PivotControllerROSNode();
 
         bool initialize() override;
@@ -56,4 +61,5 @@ namespace esvr2_ros {
                 pivot_control_messages_ros::SetPose::Response&);
         void forceSetDofPosePublish(const ros::TimerEvent&);
     };
+    typedef std::shared_ptr<PivotControllerROSNode> PivotControllerROSNodePtr;
 }

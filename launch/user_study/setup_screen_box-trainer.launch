@@ -5,10 +5,11 @@
         <arg name="old_laparoscope" value="$(arg old_laparoscope)"/>
         <arg name="required" value="true"/>
     </include>
-    <node name="image_view" pkg="rqt_image_view"
-          type="rqt_image_view" output="screen"
+    <node name="screen_player" pkg="esvr2_ros"
+          type="screen_player" output="screen"
           required="true">
-        <remap from="image" to="/laparoscope/camera/left/image_raw"/>
+        <remap from="image_raw" to="/laparoscope/camera/left/image_raw"/>
+        <remap from="display/quit" to="/laparoscope/display/quit"/>
     </node>
     <include file="$(find pivot_control_messages_ros)/launch/controlUserStudy.launch">
         <arg name="tmux" value="true"/>

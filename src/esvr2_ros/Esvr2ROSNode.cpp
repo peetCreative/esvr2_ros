@@ -10,7 +10,7 @@
 #include <ros/time.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
-
+#include <std_srvs/Trigger.h>
 #include <mutex>
 #include <memory>
 
@@ -59,6 +59,8 @@ private:
     ros::NodeHandle mNh;
     ros::NodeHandle mPNh;
     bool mIsUserStudy {false};
+    bool mQuit {false};
+    ros::ServiceServer mQuitService;
     //TODO: move this to seperate file
     std::shared_ptr<esvr2::Esvr2> mEsvr2 {nullptr};
     ros::Timer mHeadPoseTimer;
@@ -76,11 +78,23 @@ public:
             mPNh("~")
     {};
 
+    bool quit(std_srvs::Trigger::Request&, std_srvs::Trigger::Response& resp)
+    {
+        mQuit = true;
+        if (mEsvr2)
+            mEsvr2->quit();
+        resp.success = true;
+        resp.message = "quit";
+        return true;
+    }
+
     bool initialize()
     {
         LOG << "global" << LOGEND;
         std::vector<std::string> paramNames;
         mNh.getParamNames(paramNames);
+
+        mQuitService = mNh.advertiseService("display/quit", &Esvr2ROSNode::quit, this);
 
         std::string paramName;
         std::string urlstr;
@@ -105,7 +119,7 @@ public:
 
         if(mIsUserStudy)
         {
-            while((mParticipantId.empty() || mSetupId.empty()) && ros::ok())
+            while((mParticipantId.empty() || mSetupId.empty()) && ros::ok() && !mQuit)
             {
                 if(mPNh.searchParam("participant_id", paramName))
                 {
@@ -157,7 +171,7 @@ public:
         if(enablePivotController)
         {
             ROS_INFO("Enabled Pivot Controller");
-            mPivotControllerNode = std::make_shared<esvr2_ros::PivotControllerROSNode>(mNh);
+            mPivotControllerNode = std::make_shared<esvr2_ros::PivotControllerROSNode>(mNh, mVideoLoaderNode);
         }
         else
             ROS_INFO("DISABLED Pivot Controller");

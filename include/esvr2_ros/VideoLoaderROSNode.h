@@ -88,4 +88,5 @@ namespace esvr2_ros
 
         bool getQuit() override;
     };
+    typedef std::shared_ptr<VideoLoaderROSNode> VideoLoaderROSNodePtr;
 }
