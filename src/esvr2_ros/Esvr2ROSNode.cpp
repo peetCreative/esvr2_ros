@@ -255,6 +255,7 @@ int main(int argc, char *argv[])
     if(!esvr2RosNode.mParticipantId.empty() && !esvr2RosNode.mSetupId.empty())
     {
         esvr2RosNode.mConfig->logPrefix = esvr2RosNode.mParticipantId + "_" + esvr2RosNode.mSetupId;
+        esvr2RosNode.mConfig->cachePrefixParticipantId = esvr2RosNode.mParticipantId;
     }
 
     std::shared_ptr<esvr2::Esvr2> esvr2 = std::make_shared<esvr2::Esvr2>(esvr2RosNode.mConfig);
