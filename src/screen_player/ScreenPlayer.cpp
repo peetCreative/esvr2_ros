@@ -10,7 +10,12 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
     try
     {
-        cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
+        cv::Mat img = cv_bridge::toCvShare(msg, "bgr8")->image;
+        int new_cols = 1920.f*((float)img.rows/1080.f);
+        cv::Mat back = cv::Mat::zeros(img.rows, new_cols,CV_8UC3);
+        cv::Mat tmp = back(cv::Rect((new_cols-img.cols)/2,0,img.cols,img.rows));
+        img.copyTo(tmp);
+        cv::imshow("view", back);
         cv::setWindowProperty("view", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
         cv::waitKey(30);
     }
