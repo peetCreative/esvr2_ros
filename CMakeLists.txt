@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.16)
 project(esvr2_ros)
 
-add_compile_options(-std=c++14)
+SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/CMake")
 SET(CMAKE_BUILD_TYPE "Debug")
 
