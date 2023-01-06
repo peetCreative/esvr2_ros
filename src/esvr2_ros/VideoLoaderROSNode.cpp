@@ -25,7 +25,10 @@ namespace esvr2_ros {
             mRosTopicNameRaw( "image_raw" ),
             mRosTopicNameUndist( "image_undist" ),
             mRosTopicNameUndistRect( "image_undist_rect" ),
-            mIsCameraInfoInit{ false, false }
+            mIsCameraInfoInit{ false, false },
+            mIt(mNh),
+            mSubImageLeftRaw(mIt, "left/image_raw", 20, image_transport::TransportHints("compressed")),
+            mSubImageRightRaw(mIt, "right/image_raw", 20, image_transport::TransportHints("compressed"))
     {
         mRosNamespace = mNh.getNamespace();
     }
@@ -38,13 +41,15 @@ namespace esvr2_ros {
         switch (mRosInputType)
         {
             case RIT_NONE:
+            case RIT_STEREO_SPLIT:
                 mQuit = true;
                 return false;
             case RIT_MONO:
+//                 mIt = image_transport::ImageTransport(mNh);
                 ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_MONO");
-                topic = mRosNamespace + "image_raw";
+                topic = mRosNamespace + "/image_raw";
                 ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                mSubImage = mNh.subscribe(
+                mSubImage = mIt.subscribe(
                         topic, 1,
                         &VideoLoaderROSNode::newROSImageMono, this);
                 break;
@@ -52,64 +57,64 @@ namespace esvr2_ros {
                 ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_STEREO_SLICED");
                 topic = mRosNamespace + "/image";
                 ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                mSubImage = mNh.subscribe(
+                mSubImage = mIt.subscribe(
                         topic, 1,
                         &VideoLoaderROSNode::newROSImageStereoSliced, this);
                 break;
             case RIT_STEREO_SPLIT_RAW:
-                ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_STEREO_SPLIT_RAW");
-                topic = mRosNamespace + "/left/" + mRosTopicNameRaw;
-                ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                mSubImageLeftRaw.subscribe(mNh, topic, 20);
-                topic = mRosNamespace + "/right/" + mRosTopicNameRaw;
-                ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                mSubImageRightRaw.subscribe(mNh, topic, 20);
+//                 ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_STEREO_SPLIT_RAW");
+//                 topic = mRosNamespace + "/left/" + mRosTopicNameRaw;
+//                 ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
+//                 mSubImageLeftRaw = ImageSubscriber(mIt, topic, 20);
+//                 topic = mRosNamespace + "/right/" + mRosTopicNameRaw;
+//                 ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
+//                 mSubImageRightRaw = ImageSubscriber(mIt, topic, 20);
                 mApproximateSyncRaw.connectInput(
                                 mSubImageLeftRaw, mSubImageRightRaw);
                 mApproximateSyncRaw.registerCallback(
                         boost::bind(&VideoLoaderROSNode::newROSImageCallback, this, _1, _2));
                 break;
-            case RIT_STEREO_SPLIT:
-                ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_STEREO_SPLIT");
-                if(!mRosTopicNameRaw.empty())
-                {
-                    topic = mRosNamespace + "/left/" + mRosTopicNameRaw;
-                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                    mSubImageLeftRaw.subscribe(mNh, topic, 20);
-                    topic = mRosNamespace + "/right/" + mRosTopicNameRaw;
-                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                    mSubImageRightRaw.subscribe(mNh, topic, 20);
-                    mApproximateSyncRaw.connectInput(
-                                    mSubImageLeftRaw, mSubImageRightRaw);
-                    mApproximateSyncRaw.registerCallback(
-                            boost::bind(&VideoLoaderROSNode::newROSImageCallback, this, _1, _2));
-                }
-                if(!mRosTopicNameUndist.empty())
-                {
-                    topic = mRosNamespace + "/left/" + mRosTopicNameUndist;
-                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                    mSubImageLeftUndist.subscribe(mNh, topic, 20);
-                    topic = mRosNamespace + "/right/" + mRosTopicNameUndist;
-                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                    mSubImageRightUndist.subscribe(mNh, topic, 20);
-                    mApproximateSyncUndist.connectInput(
-                            mSubImageLeftUndist, mSubImageRightUndist);
-                    mApproximateSyncUndist.registerCallback(
-                            boost::bind(&VideoLoaderROSNode::newROSImageCallback, this, _1, _2));
-                }
-                if(!mRosTopicNameUndistRect.empty())
-                {
-                    topic = mRosNamespace + "/left/" + mRosTopicNameUndistRect;
-                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                    mSubImageLeftUndistRect.subscribe(mNh, topic, 20);
-                    topic = mRosNamespace + "/right/" + mRosTopicNameUndistRect;
-                    ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
-                    mSubImageRightUndistRect.subscribe(mNh, topic, 20);
-                    mApproximateSyncUndistRect.connectInput(
-                            mSubImageLeftUndistRect, mSubImageRightUndistRect);
-                    mApproximateSyncUndistRect.registerCallback(
-                            boost::bind(&VideoLoaderROSNode::newROSImageCallback, this, _1, _2));
-                }
+//             case RIT_STEREO_SPLIT:
+//                 ROS_INFO_STREAM_NAMED("esvr2_ros", "RIT_STEREO_SPLIT");
+//                 if(!mRosTopicNameRaw.empty())
+//                 {
+//                     topic = mRosNamespace + "/left/" + mRosTopicNameRaw;
+//                     ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
+//                     mSubImageLeftRaw.subscribe(mNh, topic, 20);
+//                     topic = mRosNamespace + "/right/" + mRosTopicNameRaw;
+//                     ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
+//                     mSubImageRightRaw.subscribe(mNh, topic, 20);
+//                     mApproximateSyncRaw.connectInput(
+//                                     mSubImageLeftRaw, mSubImageRightRaw);
+//                     mApproximateSyncRaw.registerCallback(
+//                             boost::bind(&VideoLoaderROSNode::newROSImageCallback, this, _1, _2));
+//                 }
+//                 if(!mRosTopicNameUndist.empty())
+//                 {
+//                     topic = mRosNamespace + "/left/" + mRosTopicNameUndist;
+//                     ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
+//                     mSubImageLeftUndist.subscribe(mNh, topic, 20);
+//                     topic = mRosNamespace + "/right/" + mRosTopicNameUndist;
+//                     ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
+//                     mSubImageRightUndist.subscribe(mNh, topic, 20);
+//                     mApproximateSyncUndist.connectInput(
+//                             mSubImageLeftUndist, mSubImageRightUndist);
+//                     mApproximateSyncUndist.registerCallback(
+//                             boost::bind(&VideoLoaderROSNode::newROSImageCallback, this, _1, _2));
+//                 }
+//                 if(!mRosTopicNameUndistRect.empty())
+//                 {
+//                     topic = mRosNamespace + "/left/" + mRosTopicNameUndistRect;
+//                     ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
+//                     mSubImageLeftUndistRect.subscribe(mNh, topic, 20);
+//                     topic = mRosNamespace + "/right/" + mRosTopicNameUndistRect;
+//                     ROS_INFO_STREAM_NAMED("esvr2_ros", "Subscribe to " << topic);
+//                     mSubImageRightUndistRect.subscribe(mNh, topic, 20);
+//                     mApproximateSyncUndistRect.connectInput(
+//                             mSubImageLeftUndistRect, mSubImageRightUndistRect);
+//                     mApproximateSyncUndistRect.registerCallback(
+//                             boost::bind(&VideoLoaderROSNode::newROSImageCallback, this, _1, _2));
+//                 }
         }
 
         setDistortion( mDistortion );
@@ -149,42 +154,42 @@ namespace esvr2_ros {
     void VideoLoaderROSNode::setDistortion(esvr2::Distortion distortion )
     {
         mDistortion = distortion;
-        if (mRosInputType == RIT_STEREO_SPLIT)
-        {
-            if(mDistortion == esvr2::DIST_RAW)
-            {
-                ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_RAW");
-                mSubImageLeftRaw.subscribe();
-                mSubImageRightRaw.subscribe();
-            }
-            else
-            {
-                mSubImageLeftRaw.unsubscribe();
-                mSubImageRightRaw.unsubscribe();
-            }
-            if(mDistortion == esvr2::DIST_UNDISTORT)
-            {
-                ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_UNDISTORT");
-                mSubImageLeftUndist.subscribe();
-                mSubImageRightUndist.subscribe();
-            }
-            else
-            {
-                mSubImageLeftUndist.unsubscribe();
-                mSubImageRightUndist.unsubscribe();
-            }
-            if(mDistortion == esvr2::DIST_UNDISTORT_RECTIFY)
-            {
-                ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_UNDISTORT_RECTIFY");
-                mSubImageLeftUndistRect.subscribe();
-                mSubImageRightUndistRect.subscribe();
-            }
-            else
-            {
-                mSubImageLeftUndistRect.unsubscribe();
-                mSubImageRightUndistRect.unsubscribe();
-            }
-        }
+//         if (mRosInputType == RIT_STEREO_SPLIT)
+//         {
+//             if(mDistortion == esvr2::DIST_RAW)
+//             {
+//                 ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_RAW");
+//                 mSubImageLeftRaw.subscribe();
+//                 mSubImageRightRaw.subscribe();
+//             }
+//             else
+//             {
+//                 mSubImageLeftRaw.unsubscribe();
+//                 mSubImageRightRaw.unsubscribe();
+//             }
+//             if(mDistortion == esvr2::DIST_UNDISTORT)
+//             {
+//                 ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_UNDISTORT");
+//                 mSubImageLeftUndist.subscribe();
+//                 mSubImageRightUndist.subscribe();
+//             }
+//             else
+//             {
+//                 mSubImageLeftUndist.unsubscribe();
+//                 mSubImageRightUndist.unsubscribe();
+//             }
+//             if(mDistortion == esvr2::DIST_UNDISTORT_RECTIFY)
+//             {
+//                 ROS_INFO_STREAM_NAMED("esvr2_ros", "Image set to DIST_UNDISTORT_RECTIFY");
+//                 mSubImageLeftUndistRect.subscribe();
+//                 mSubImageRightUndistRect.subscribe();
+//             }
+//             else
+//             {
+//                 mSubImageLeftUndistRect.unsubscribe();
+//                 mSubImageRightUndistRect.unsubscribe();
+//             }
+//         }
     }
 
     void VideoLoaderROSNode::newROSImageStereoSliced(
@@ -215,6 +220,14 @@ namespace esvr2_ros {
         {
             cv_ptr = cv_bridge::toCvShare(
                     imgRaw, imgRaw->encoding );
+            if(imgRaw->encoding == "rgb8")
+                mColorConversion = cv::COLOR_RGB2BGRA;
+            if(imgRaw->encoding == "bgr8")
+                mColorConversion = cv::COLOR_BGR2BGRA;
+            if(imgRaw->encoding == "rgba8")
+                mColorConversion = cv::COLOR_RGBA2BGRA;
+            if(imgRaw->encoding == "bgra8")
+                mColorConversion = cv::COLOR_COLORCVT_MAX;
             cv::Mat image = cv_ptr->image.clone();
             setImageDataFromRaw( &image, nullptr );
         }

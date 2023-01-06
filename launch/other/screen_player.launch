@@ -1,0 +1,10 @@
+<launch>
+    <node name="screen_player" pkg="esvr2_ros"
+          type="screen_player" output="screen"
+          required="true">
+        <param name="image_transport" value="compressed"/>
+        <remap from="image_raw" to="/laparoscope/camera/left/image_raw"/>
+        <remap from="image_raw/compressed" to="/laparoscope/camera/left/image_raw/compressed"/>
+        <remap from="display/quit" to="/laparoscope/display/quit"/>
+    </node>
+</launch>

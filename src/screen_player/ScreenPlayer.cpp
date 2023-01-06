@@ -16,7 +16,6 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
         cv::Mat tmp = back(cv::Rect((new_cols-img.cols)/2,0,img.cols,img.rows));
         img.copyTo(tmp);
         cv::imshow("view", back);
-        cv::setWindowProperty("view", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
         cv::waitKey(30);
     }
     catch (cv_bridge::Exception& e)
@@ -39,8 +38,9 @@ int main(int argc, char **argv)
     ros::ServiceServer quitService = nh.advertiseService("display/quit", &quit);
     cv::namedWindow("view", cv::WND_PROP_FULLSCREEN);
     cv::setWindowProperty("view", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+    cv::resizeWindow("view",1920,1080);
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber sub = it.subscribe("image_raw", 1, imageCallback);
+    image_transport::Subscriber sub = it.subscribe("image_raw", 1, imageCallback, image_transport::TransportHints("compressed"));
     while (ros::ok() && !mQuit)
         ros::spinOnce();
     cv::destroyWindow("view");

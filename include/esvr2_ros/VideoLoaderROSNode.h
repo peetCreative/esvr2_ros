@@ -12,9 +12,12 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber_filter.h>
 
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> ApproximatePolicy;
 typedef message_filters::Synchronizer<ApproximatePolicy> ApproximateSync;
+typedef image_transport::SubscriberFilter ImageSubscriber;
 
 namespace esvr2_ros
 {
@@ -46,17 +49,21 @@ namespace esvr2_ros
     {
     private:
         ros::NodeHandle mNh;
-        ros::Subscriber mSubImage;
+        image_transport::ImageTransport mIt;
+        image_transport::Subscriber mSubImage;
         const uint32_t mQueueSize {20};
-        message_filters::Subscriber<sensor_msgs::Image> mSubImageLeftRaw;
-        message_filters::Subscriber<sensor_msgs::Image> mSubImageRightRaw;
+        ImageSubscriber mSubImageLeftRaw;
+        ImageSubscriber mSubImageRightRaw;
         ApproximateSync mApproximateSyncRaw {ApproximatePolicy(mQueueSize)};
-        message_filters::Subscriber<sensor_msgs::Image> mSubImageLeftUndist;
-        message_filters::Subscriber<sensor_msgs::Image> mSubImageRightUndist;
-        ApproximateSync mApproximateSyncUndist {ApproximatePolicy(mQueueSize)};
-        message_filters::Subscriber<sensor_msgs::Image> mSubImageLeftUndistRect;
-        message_filters::Subscriber<sensor_msgs::Image> mSubImageRightUndistRect;
-        ApproximateSync mApproximateSyncUndistRect {ApproximatePolicy(mQueueSize)};
+//         message_filters::Subscriber<sensor_msgs::Image> mSubImageLeftRaw;
+//         message_filters::Subscriber<sensor_msgs::Image> mSubImageRightRaw;
+//         ApproximateSync mApproximateSyncRaw {ApproximatePolicy(mQueueSize)};
+//         message_filters::Subscriber<sensor_msgs::Image> mSubImageLeftUndist;
+//         message_filters::Subscriber<sensor_msgs::Image> mSubImageRightUndist;
+//         ApproximateSync mApproximateSyncUndist {ApproximatePolicy(mQueueSize)};
+//         message_filters::Subscriber<sensor_msgs::Image> mSubImageLeftUndistRect;
+//         message_filters::Subscriber<sensor_msgs::Image> mSubImageRightUndistRect;
+//         ApproximateSync mApproximateSyncUndistRect {ApproximatePolicy(mQueueSize)};
         ros::Subscriber mSubCamInfoLeft;
         ros::Subscriber mSubCamInfoRight;
         RosInputType mRosInputType;
